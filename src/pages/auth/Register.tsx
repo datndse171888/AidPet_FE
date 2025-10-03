@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Phone, Check, PawPrint, User, CircleUserRound, BookUser, Mars, Venus } from 'lucide-react';
-import { Input, Select } from '../../components/ui/Input';
+import { Input, Select } from '../../components/ui/input/Input';
 import { Button } from '../../components/ui/Button';
 import { FormErrors } from '../../types';
 import { RegisterFormData } from '../../types/User';

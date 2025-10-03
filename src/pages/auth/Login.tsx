@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Lock, PawPrint, CircleUserRound } from 'lucide-react';
-import { Input } from '../../components/ui/Input';
+import { Input } from '../../components/ui/input/Input';
 import { Button } from '../../components/ui/Button';
 import { FormErrors } from '../../types';
 import { LoginFormData } from '../../types/User';

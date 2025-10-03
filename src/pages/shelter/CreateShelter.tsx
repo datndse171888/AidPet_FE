@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Phone, PawPrint, BookUser, House, Info } from 'lucide-react';
-import { Input } from '../../components/ui/Input';
+import { Input } from '../../components/ui/input/Input';
 import { Button } from '../../components/ui/Button';
 import { FormErrors } from '../../types';
 import { ShelterRequest } from '../../types/Shelter';

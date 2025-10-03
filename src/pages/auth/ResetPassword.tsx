@@ -3,7 +3,7 @@ import { FormErrors } from '../../types';
 import { authApi } from '../../services/api/AuthApi';
 import { Lock, PawPrint } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
+import { Input } from '../../components/ui/input/Input';
 import { navigationService } from '../../services/navigator/NavigationService';
 
 export const ResetPassword: React.FC = () => {

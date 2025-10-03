@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Filter } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
 import { ShelterPostCard } from '../../components/ui/card/ShelterPostCard';
 import { Post, PostRequest } from '../../types/Post';
-import { navigationService } from '../../services/navigator/NavigationService';
+import { CreatePostForm } from '../shelter/CreatePostForm';
 
 interface PostTabProps {
   onViewDetail?: (post: PostRequest) => void;
@@ -21,6 +20,7 @@ export const ShelterPostTab: React.FC<PostTabProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
   const [isLoading, setIsLoading] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false); // Thêm state này
 
   // Mock data - replace with actual API call
   useEffect(() => {
@@ -99,9 +99,28 @@ export const ShelterPostTab: React.FC<PostTabProps> = ({
   };
 
   const handleCreatePost = () => {
-    console.log('Create new post');
-    navigationService.goTo('/post');
+    setShowCreateForm(true); // Thay đổi từ navigationService.goTo('/post')
   };
+
+  const handlePostCreated = (newPost: Post) => {
+    // Thêm post mới vào danh sách
+    setPosts(prev => [newPost, ...prev]);
+    setShowCreateForm(false);
+  };
+
+  const handleCancelCreate = () => {
+    setShowCreateForm(false);
+  };
+
+  // Nếu đang ở chế độ tạo post, hiển thị form tạo post
+  if (showCreateForm) {
+    return (
+      <CreatePostForm
+        onPostCreated={handlePostCreated}
+        onCancel={handleCancelCreate}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { FormErrors } from '../../types';
 import { PawPrint, ShieldCheck } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
+import { Input } from '../../components/ui/input/Input';
 import { navigationService } from '../../services/navigator/NavigationService';
 
 export const VerifyAccount: React.FC = () => {
