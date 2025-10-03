@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Filter, Trash2, Plus, Minus } from 'lucide-react';
-import { AnimalCard } from '../../components/ui/Card';
+import { AnimalCard } from '../../components/ui/card/Card';
 import { Button } from '../../components/ui/Button';
 
 export const Cart: React.FC = () => {

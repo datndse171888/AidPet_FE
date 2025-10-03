@@ -3,7 +3,9 @@ import { AccountResponse } from '../../types/User';
 import { ProfileHeader } from '../../components/common/header/ProfileHeader';
 import { ProfileTabs } from '../../pages/profile/ProfileTabs';
 import { InformationTab } from './InformationTab';
-import { SettingsTab } from '../../pages/profile/SettingsTab';
+import { SettingTab } from './SettingTab';
+import { ShelterPostTab } from './ShelterPostTab';
+import { navigationService } from '../../services/navigator/NavigationService';
 
 export const Profile: React.FC = () => {
     const [activeTab, setActiveTab] = useState<string>('profile');
@@ -36,12 +38,35 @@ export const Profile: React.FC = () => {
         }
     };
 
+    const handleViewPostDetail = (post: any) => {
+        // Navigate to post detail page
+        console.log('View post detail:', post);
+    };
+
+    const handlePostUp = (post: any) => {
+        // Handle post promotion/boosting
+        console.log('Post up:', post);
+    };
+
+    const handleDeletePost = (postId: string) => {
+        // Handle post deletion
+        console.log('Delete post:', postId);
+    };
+
     const renderTabContent = () => {
         switch (activeTab) {
             case 'profile':
                 return <InformationTab user={user} onInformationUpdate={handleProfileUpdate} />;
             case 'settings':
-                return <SettingsTab onPasswordChange={handlePasswordChange} />;
+                return <SettingTab onPasswordChange={handlePasswordChange} />;
+            case 'posts':
+                return user.role === 'SHELTER' ? (
+                    <ShelterPostTab
+                        onViewDetail={handleViewPostDetail}
+                        onPostUp={handlePostUp}
+                        onDeletePost={handleDeletePost}
+                    />
+                ) : null;
             default:
                 return <InformationTab user={user} onInformationUpdate={handleProfileUpdate} />;
         }

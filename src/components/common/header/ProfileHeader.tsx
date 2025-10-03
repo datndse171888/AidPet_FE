@@ -24,7 +24,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
         </div>
         <div className="text-white">
           <h1 className="text-2xl font-bold">
-            {user?.userName || 'User Name'}
+            {user?.userName || 'User Name'}{' '}{user.role ? `(${user.role})` : '(Role)'}
           </h1>
           <p className="text-orange-100">{user?.email || 'Email'}</p>
         </div>

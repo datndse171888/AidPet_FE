@@ -1,6 +1,6 @@
 import React from 'react';
-import { Animal } from '../../types';
-import { Button } from './Button';
+import { Animal } from '../../../types';
+import { Button } from '../Button';
 
 interface AnimalCardProps {
   animal: Animal;

@@ -48,7 +48,7 @@ export const ForgotPassword: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-50 flex flex-col justify-center w-full h-full">
+    <div className="bg-gray-50 flex flex-col justify-center w-full h-screen">
       {/* Banner */}
       {/* <div className="bg-orange-500 text-white py-8 mb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

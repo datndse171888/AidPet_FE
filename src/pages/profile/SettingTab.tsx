@@ -3,11 +3,11 @@ import { Lock } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 
-interface SettingsTabProps {
+interface SettingTabProps {
   onPasswordChange?: (passwordData: any) => void;
 }
 
-export const SettingsTab: React.FC<SettingsTabProps> = ({ onPasswordChange }) => {
+export const SettingTab: React.FC<SettingTabProps> = ({ onPasswordChange }) => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
