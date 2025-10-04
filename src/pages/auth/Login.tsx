@@ -40,11 +40,20 @@ export const Login: React.FC = () => {
     try {
       // Simulate API call
       const response = await authApi.login(formData);
-      localStorage.setItem('user', JSON.stringify(response.data));
+      const userData = response.data;
+      localStorage.setItem('user', JSON.stringify(userData));
+
       // console.log('Logging in with:', response.data.token);
       // On success, redirect or show success message
       // alert('Login successful!');
-      navigationService.goTo('/');
+
+      // Redirect based on role
+      if (userData.role === 'ADMIN') {
+        navigationService.goTo('/admin');
+      } else {
+        navigationService.goTo('/');
+      }
+      
     } catch (error) {
       setErrors({ general: 'Login failed. Please try again.' });
     } finally {

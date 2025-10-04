@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Lock } from 'lucide-react';
+import { Lock, LogOut } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/input/Input';
+import { navigationService } from '../../services/navigator/NavigationService';
 
 interface SettingTabProps {
   onPasswordChange?: (passwordData: any) => void;
@@ -78,6 +79,13 @@ export const SettingTab: React.FC<SettingTabProps> = ({ onPasswordChange }) => {
       confirmPassword: '',
     });
     setErrors({});
+  };
+
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to log out?')) {
+      localStorage.removeItem('user');
+      navigationService.goTo('/login');
+    }
   };
 
   return (
@@ -175,10 +183,24 @@ export const SettingTab: React.FC<SettingTabProps> = ({ onPasswordChange }) => {
         </div>
       </div>
 
-      {/* Danger Zone */}
+      {/* Account Actions */}
       <div className="border border-red-200 rounded-lg p-4">
-        <h3 className="font-semibold text-red-900 mb-4">Danger Zone</h3>
+        <h3 className="font-semibold text-red-900 mb-4">Account Actions</h3>
         <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
+            <div>
+              <p className="font-medium text-red-900">Log Out</p>
+              <p className="text-sm text-red-600">Sign out of your account</p>
+            </div>
+            <Button
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Log Out
+            </Button>
+          </div>
+
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium text-red-900">Delete Account</p>

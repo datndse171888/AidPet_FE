@@ -45,6 +45,14 @@ export const Header: React.FC = () => {
     setIsMobileMenuOpen(false); // Close mobile menu when navigating
   };
 
+  const handleProfileClick = () => {
+    if (user.role === 'ADMIN') {
+      window.location.href = '/admin';
+    } else {
+      window.location.href = '/profile';
+    }
+  };
+
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 w-full sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -82,11 +90,10 @@ export const Header: React.FC = () => {
                   handleNavClick(item.key);
                   window.location.href = `/${item.key}`;
                 }}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive === item.key
-                    ? 'text-orange-600 bg-orange-50'
-                    : 'text-gray-700 hover:text-orange-600'
-                }`}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive === item.key
+                  ? 'text-orange-600 bg-orange-50'
+                  : 'text-gray-700 hover:text-orange-600'
+                  }`}
               >
                 {item.label}
               </a>
@@ -96,7 +103,7 @@ export const Header: React.FC = () => {
             <div className="flex items-center space-x-4">
               {isAuthenticated ? (
                 <div className="flex items-center space-x-2">
-                  <a href="/profile" className="flex items-center">
+                  <button onClick={handleProfileClick} className="flex items-center">
                     {user?.image ? (
                       <img
                         src={user.image}
@@ -106,7 +113,7 @@ export const Header: React.FC = () => {
                     ) : (
                       <CircleUser className="h-6 w-6 text-gray-600 hover:text-orange-600 cursor-pointer" />
                     )}
-                  </a>
+                  </button>
                 </div>
               ) : (
                 <a
@@ -123,19 +130,14 @@ export const Header: React.FC = () => {
           <div className="md:hidden flex items-center space-x-2">
             {/* Mobile User Menu */}
             {isAuthenticated && (
-              <a href="/profile" className="flex items-center">
-                {user?.image ? (
-                  <img
-                    src={user.image}
-                    alt="User avatar"
-                    className="h-8 w-8 rounded-full object-cover hover:ring-2 hover:ring-orange-300 transition-all cursor-pointer"
-                  />
-                ) : (
-                  <CircleUser className="h-6 w-6 text-gray-600 hover:text-orange-600 cursor-pointer" />
-                )}
-              </a>
+              <button
+                onClick={handleProfileClick}
+                className="text-sm text-orange-600 hover:text-orange-700 font-medium"
+              >
+                {user.role === 'ADMIN' ? 'Admin Panel' : 'Profile'}
+              </button>
             )}
-            
+
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 rounded-md text-gray-700 hover:text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -154,11 +156,11 @@ export const Header: React.FC = () => {
         {isMobileMenuOpen && (
           <>
             {/* Backdrop */}
-            <div 
+            <div
               className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
               onClick={() => setIsMobileMenuOpen(false)}
             />
-            
+
             {/* Mobile Menu Panel */}
             <div className="absolute top-full left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50 md:hidden">
               <div className="px-4 py-4 space-y-4">
@@ -185,11 +187,10 @@ export const Header: React.FC = () => {
                         handleNavClick(item.key);
                         window.location.href = `/${item.key}`;
                       }}
-                      className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                        isActive === item.key
-                          ? 'text-orange-600 bg-orange-50'
-                          : 'text-gray-700 hover:text-orange-600 hover:bg-gray-50'
-                      }`}
+                      className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${isActive === item.key
+                        ? 'text-orange-600 bg-orange-50'
+                        : 'text-gray-700 hover:text-orange-600 hover:bg-gray-50'
+                        }`}
                     >
                       {item.label}
                     </a>
