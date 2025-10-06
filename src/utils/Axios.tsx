@@ -11,6 +11,9 @@ const axiosInstance: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    ...(localStorage.getItem('user') && {
+      'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user') || '{}').token || ''}`
+    }),
   },
 });
 

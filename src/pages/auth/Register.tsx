@@ -46,8 +46,11 @@ export const Register: React.FC = () => {
       newErrors.email = 'Please enter a valid email';
     }
 
-    if (!/^\+?[\d\s\-\(\)]+$/.test(formData.phone)) {
-      newErrors.phone = 'Please enter a valid phone number';
+    const phoneDigits = formData.phone.replace(/\D/g, '');
+    if (phoneDigits.length !== 10) {
+      newErrors.phone = 'Phone number must be 10 digits';
+    } else if (!/^(09|03|05|07|08)/.test(phoneDigits)) {
+      newErrors.phone = 'Phone number must start with 09, 03, 05, 07 or 08';
     }
 
     if (formData.gender === undefined) {
@@ -79,11 +82,11 @@ export const Register: React.FC = () => {
       const response = await authApi.register(formData);
       console.log('Registering with:', response.data);
       // On success, redirect or show success message
-      alert('Registration successful!');
-      if(formData.role === 'SHELTER') {
+      if (formData.role === 'SHELTER') {
         navigationService.goTo('/new-shelter', { state: { uuid: response.data.uuid } });
+      } else {
+        navigationService.goTo('/login');
       }
-      navigationService.goTo('/login');
     } catch (error) {
       setErrors({ general: 'Registration failed. Please try again.' });
     } finally {
@@ -249,6 +252,7 @@ export const Register: React.FC = () => {
                 label="Phone Number"
                 name="phone"
                 type="tel"
+                pattern='[0-9]*'
                 value={formData.phone}
                 onChange={handleChange}
                 error={errors.phone}

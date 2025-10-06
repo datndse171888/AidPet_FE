@@ -3,7 +3,7 @@ import { Mail, Phone, PawPrint, BookUser, House, Info } from 'lucide-react';
 import { Input } from '../../components/ui/input/Input';
 import { Button } from '../../components/ui/Button';
 import { FormErrors } from '../../types';
-import { ShelterRequest } from '../../types/Shelter';
+import { ShelterRequest, ShelterResponse } from '../../types/Shelter';
 import { shelterApi } from '../../services/api/ShelterApi';
 import { navigationService } from '../../services/navigator/NavigationService';
 import { useLocation } from 'react-router-dom';
@@ -11,7 +11,7 @@ import { useLocation } from 'react-router-dom';
 export const CreateShelter: React.FC = () => {
 
     const location = useLocation();
-        
+
     const [formData, setFormData] = useState<ShelterRequest>({
         uuid: location.state.uuid,
         shelterName: '',
@@ -31,8 +31,11 @@ export const CreateShelter: React.FC = () => {
             newErrors.email = 'Please enter a valid email';
         }
 
-        if (!/^\+?[\d\s\-\(\)]+$/.test(formData.phone)) {
-            newErrors.phone = 'Please enter a valid phone number';
+        const phoneDigits = formData.phone.replace(/\D/g, '');
+        if (phoneDigits.length !== 10) {
+            newErrors.phone = 'Phone number must be 10 digits';
+        } else if (!/^(09|03|05|07|08)/.test(phoneDigits)) {
+            newErrors.phone = 'Phone number must start with 09, 03, 05, 07 or 08';
         }
 
         setErrors(newErrors);
@@ -52,9 +55,10 @@ export const CreateShelter: React.FC = () => {
         try {
             // Simulate API call
             const response = await shelterApi.createShelter(formData);
-            console.log('Shelter created:', response.data);
+            const shelter: ShelterResponse = response.data;
+            console.log('Shelter created:', response);
             // On success, redirect or show success message
-            alert('Registration successful!');
+            localStorage.setItem('shelter', JSON.stringify(shelter));
             navigationService.goTo('/login');
         } catch (error) {
             setErrors({ general: 'Registration failed. Please try again.' });
@@ -133,6 +137,7 @@ export const CreateShelter: React.FC = () => {
                             label="Shelter Phone Number"
                             name="phone"
                             type="tel"
+                            pattern='[0-9]*'
                             value={formData.phone}
                             onChange={handleChange}
                             error={errors.phone}

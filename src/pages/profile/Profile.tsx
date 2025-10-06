@@ -5,7 +5,8 @@ import { ProfileTabs } from '../../pages/profile/ProfileTabs';
 import { InformationTab } from './InformationTab';
 import { SettingTab } from './SettingTab';
 import { ShelterPostTab } from './ShelterPostTab';
-import { navigationService } from '../../services/navigator/NavigationService';
+import { AnimalTab } from './AnimalTab'; // Import AnimalTab
+import { Animal } from '../../types/Animal'; // Import Animal type
 
 export const Profile: React.FC = () => {
     const [activeTab, setActiveTab] = useState<string>('profile');
@@ -53,6 +54,22 @@ export const Profile: React.FC = () => {
         console.log('Delete post:', postId);
     };
 
+    // Animal handlers
+    const handleViewAnimalDetail = (animal: Animal) => {
+        // Navigate to animal detail page or show modal
+        console.log('View animal detail:', animal);
+    };
+
+    const handleEditAnimal = (animal: Animal) => {
+        // Handle animal editing
+        console.log('Edit animal:', animal);
+    };
+
+    const handleDeleteAnimal = (animalId: string) => {
+        // Handle animal deletion
+        console.log('Delete animal:', animalId);
+    };
+
     const renderTabContent = () => {
         switch (activeTab) {
             case 'profile':
@@ -65,6 +82,14 @@ export const Profile: React.FC = () => {
                         onViewDetail={handleViewPostDetail}
                         onPostUp={handlePostUp}
                         onDeletePost={handleDeletePost}
+                    />
+                ) : null;
+            case 'animals':
+                return user.role === 'SHELTER' ? (
+                    <AnimalTab
+                        onViewDetail={handleViewAnimalDetail}
+                        onEditAnimal={handleEditAnimal}
+                        onDeleteAnimal={handleDeleteAnimal}
                     />
                 ) : null;
             default:

@@ -1,4 +1,4 @@
-import { LoginFormData, AccountResponse, RegisterFormData } from "../../types/User";
+import { LoginFormData, AccountResponse, RegisterFormData, VerifyTokenRequest } from "../../types/User";
 import { api } from "../../utils/Axios";
 
 // Auth API methods
@@ -11,31 +11,35 @@ export const authApi = {
     return api.post<AccountResponse>('/users/register', userData);
   },
 
-//   logout: () => {
-//     // Since we're using JWT, logout is handled client-side
-//     // by removing the token from localStorage
-//     return Promise.resolve();
-//   },
+  //   logout: () => {
+  //     // Since we're using JWT, logout is handled client-side
+  //     // by removing the token from localStorage
+  //     return Promise.resolve();
+  //   },
+
+  verifyAccount: (token: VerifyTokenRequest) => {
+    return api.post<string>('/users/verify-account', token);
+  },
 
   getProfile: (uuid: string) => {
     return api.get<AccountResponse>('/user/' + uuid);
   },
 
-//   updateProfile: (userData: {
-//     fullName?: string;
-//     phoneNumber?: string;
-//     photoURL?: string;
-//     gender?: string;
-//   }) => {
-//     return api.put('/auth/profile', userData);
-//   },
+  //   updateProfile: (userData: {
+  //     fullName?: string;
+  //     phoneNumber?: string;
+  //     photoURL?: string;
+  //     gender?: string;
+  //   }) => {
+  //     return api.put('/auth/profile', userData);
+  //   },
 
-//   changePassword: (data: {
-//     currentPassword: string;
-//     newPassword: string;
-//   }) => {
-//     return api.put('/auth/change-password', data);
-//   },
+  //   changePassword: (data: {
+  //     currentPassword: string;
+  //     newPassword: string;
+  //   }) => {
+  //     return api.put('/auth/change-password', data);
+  //   },
 
   forgotPassword: (email: string) => {
     return api.post('/users/forgot-password', { email });

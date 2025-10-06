@@ -1,5 +1,5 @@
 import React from 'react';
-import { PawPrint, LayoutDashboard, FileText, User, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PawPrint, LayoutDashboard, FileText, User, Settings, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { navigationService } from '../../services/navigator/NavigationService';
 
@@ -23,6 +23,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
       label: 'Post Manage',
       path: '/admin/posts',
       key: 'posts'
+    },
+    {
+      icon: Heart,
+      label: 'Animal Manage',
+      path: '/admin/animals',
+      key: 'animals'
     },
     {
       icon: User,
@@ -50,9 +56,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
   };
 
   return (
-    <div className={`bg-gradient-to-b from-orange-500 to-orange-600 text-white transition-all duration-300 ${
-      collapsed ? 'w-16' : 'w-64'
-    } min-h-screen relative shadow-lg`}>
+    <div className={`bg-gradient-to-b from-orange-500 to-orange-600 text-white transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'
+      } h-screen fixed left-0 top-0 shadow-lg z-30 flex flex-col`}>
       {/* Header */}
       <div className="p-4 border-b border-orange-400">
         <div className="flex items-center justify-between">
@@ -86,26 +91,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.path);
-            
+
             return (
               <li key={item.key}>
                 <button
                   onClick={() => handleItemClick(item.path)}
-                  className={`w-full flex items-center px-3 py-3 rounded-lg transition-all duration-200 group ${
-                    active
+                  className={`w-full flex items-center px-3 py-3 rounded-lg transition-all duration-200 group ${active
                       ? 'bg-orange-400 bg-opacity-50 text-white shadow-md'
                       : 'text-orange-100 hover:bg-orange-400 hover:bg-opacity-30 hover:text-white'
-                  }`}
+                    }`}
                   title={collapsed ? item.label : undefined}
                 >
-                  <Icon className={`h-5 w-5 ${collapsed ? 'mx-auto' : 'mr-3'} ${
-                    active ? 'text-white' : 'text-orange-200 group-hover:text-white'
-                  }`} />
-                  
+                  <Icon className={`h-5 w-5 ${collapsed ? 'mx-auto' : 'mr-3'} ${active ? 'text-white' : 'text-orange-200 group-hover:text-white'
+                    }`} />
+
                   {!collapsed && (
                     <span className="text-sm font-medium">{item.label}</span>
                   )}
-                  
+
                   {active && !collapsed && (
                     <div className="ml-auto w-2 h-2 bg-white rounded-full"></div>
                   )}
@@ -118,7 +121,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
 
       {/* Footer */}
       {!collapsed && (
-        <div className="absolute bottom-4 left-4 right-4">
+        <div className="mt-auto p-4">
           <div className="bg-orange-400 bg-opacity-30 rounded-lg p-3">
             <p className="text-xs text-orange-100 text-center">
               Admin Dashboard v1.0

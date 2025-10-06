@@ -1,15 +1,41 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FormErrors } from '../../types';
 import { PawPrint, ShieldCheck } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/input/Input';
 import { navigationService } from '../../services/navigator/NavigationService';
+import { VerifyTokenRequest } from '../../types/User';
+import { useSearchParams } from 'react-router-dom';
+import { authApi } from '../../services/api/AuthApi';
 
 export const VerifyAccount: React.FC = () => {
-  const [verifyCode, setVerifyCode] = useState<string>('')
-  
+  const [search] = useSearchParams();
+  const token = search.get('token') || '';
+  console.log('Token from URL:', token);
+  const verifyCode: VerifyTokenRequest = (
+    { token: token }
+  );
+
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (token) {
+      verifyAccount();
+    } else {
+      setErrors({ general: 'No verification token provided.' });
+    }
+  }, [])
+
+  const verifyAccount = async () => {
+    try {
+      const response = await authApi.verifyAccount(verifyCode);
+      console.log('Verify response:', response.data);
+      navigationService.goTo('/login');
+    } catch (error) {
+      setErrors({ general: 'Verify failed. Please try again.' });
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,10 +45,12 @@ export const VerifyAccount: React.FC = () => {
 
     try {
       // Simulate API call
-      console.log('Verifying code:', verifyCode);
+
+      const response = await authApi.verifyAccount(verifyCode);
+      console.log('Verify response:', response.data);
       // On success, redirect or show success message
       // alert('Login successful!');
-      navigationService.goTo('/');
+      navigationService.goTo('/login');
     } catch (error) {
       setErrors({ general: 'Verify failed. Please try again.' });
     } finally {
@@ -67,12 +95,9 @@ export const VerifyAccount: React.FC = () => {
 
             <Input
               label="Verification Code"
-              name="verifyCode"
               type="text"
-              value={verifyCode}
-              onChange={e => { setVerifyCode( e.target.value )}}
+              value={verifyCode.token}
               icon={<ShieldCheck className="h-5 w-5 text-gray-400" />}
-              placeholder='XXXXXX'
               required
             />
 
