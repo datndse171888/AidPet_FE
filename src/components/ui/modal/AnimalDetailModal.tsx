@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { X, Edit, Save, Calendar, Tag, User, Heart, MapPin, Info } from 'lucide-react';
-import { Animal, AnimalRequest } from '../../../types/Animal';
+import { AnimalRequest, AnimalResponse } from '../../../types/Animal';
 import { Button } from '../Button';
 import { Input, Select } from '../input/Input';
 import { FormErrors } from '../../../types';
 
 interface AnimalDetailModalProps {
     isOpen: boolean;
-    animal: Animal | null;
+    animal: AnimalResponse | null;
     onClose: () => void;
     onSave: (animalData: AnimalRequest) => void;
     showActions?: boolean;
@@ -60,7 +60,7 @@ export const AnimalDetailModal: React.FC<AnimalDetailModalProps> = ({
         if (animal) {
             setEditData({
                 shelterUuid: animal.shelter?.shelterUuid || 'current-shelter-uuid',
-                categoryAnimalsUuid: animal.category_animals?.animalCateUuid || '',
+                categoryAnimalsUuid: animal.categoryAnimals.animalCateUuid || '',
                 name: animal.name,
                 age: animal.age,
                 breed: animal.breed,
@@ -177,7 +177,7 @@ export const AnimalDetailModal: React.FC<AnimalDetailModalProps> = ({
             // Reset to original data
             setEditData({
                 shelterUuid: animal.shelter?.shelterUuid || 'current-shelter-uuid',
-                categoryAnimalsUuid: animal.category_animals?.animalCateUuid || '',
+                categoryAnimalsUuid: animal.categoryAnimals.animalCateUuid || '',
                 name: animal.name,
                 age: animal.age,
                 breed: animal.breed,
@@ -401,7 +401,7 @@ export const AnimalDetailModal: React.FC<AnimalDetailModalProps> = ({
                                                     <span className="text-sm font-medium text-gray-500">Category</span>
                                                 </div>
                                                 <div className="text-lg font-semibold text-gray-900">
-                                                    {animal.category_animals?.categoryName || 'Unknown'}
+                                                    {animal.categoryAnimals.categoryName || 'Unknown'}
                                                 </div>
                                             </div>
 

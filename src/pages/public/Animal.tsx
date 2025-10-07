@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Heart, PawPrint } from 'lucide-react';
+import { Search, Filter, Heart, PawPrint, Eye } from 'lucide-react';
 import { AnimalResponse } from '../../types/Animal';
-import { AnimalCard } from '../../components/ui/card/AnimalCard';
 import { AnimalDetailModal } from '../../components/ui/modal/AnimalDetailModal';
 import { animalApi } from '../../services/api/AnimalApi';
 import { DataResponse } from '../../types/DataResponse';
@@ -11,7 +10,6 @@ import { Button } from '../../components/ui/Button';
 export const Animal: React.FC = () => {
   const [animals, setAnimals] = useState<AnimalResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'AVAILABLE' | 'ADOPTED' | 'RESCUED' | 'PENDING'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -54,12 +52,10 @@ export const Animal: React.FC = () => {
       animal.categoryAnimals?.categoryName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       animal.shelter?.shelterName.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesStatus = statusFilter === 'all' || animal.status === statusFilter;
-
     const matchesCategory = categoryFilter === 'all' ||
       animal.categoryAnimals?.animalCateUuid === categoryFilter;
 
-    return matchesSearch && matchesStatus && matchesCategory;
+    return matchesSearch && matchesCategory;
   });
 
   const handleViewDetail = (animal: AnimalResponse) => {
@@ -75,26 +71,6 @@ export const Animal: React.FC = () => {
   const handleAdoption = (animal: AnimalResponse) => {
     // Navigate to adoption page with animal info
     navigationService.goTo(`/adopt-animal?animalId=${animal.animalUuid}`);
-  };
-
-  // Convert AnimalResponse to Animal for the card component
-  const convertToAnimal = (animalResponse: AnimalResponse) => {
-    return {
-      animalUuid: animalResponse.animalUuid,
-      name: animalResponse.name,
-      age: animalResponse.age,
-      breed: animalResponse.breed,
-      gender: animalResponse.gender,
-      description: animalResponse.description,
-      img_url: animalResponse.imgUrl,
-      status: animalResponse.status,
-      category_animals: animalResponse.categoryAnimals ? {
-        animalCateUuid: animalResponse.categoryAnimals.animalCateUuid,
-        categoryName: animalResponse.categoryAnimals.categoryName,
-        description: animalResponse.categoryAnimals.description || '',
-      } : undefined,
-      shelter: animalResponse.shelter
-    };
   };
 
   return (
@@ -232,7 +208,7 @@ export const Animal: React.FC = () => {
           {/* Animal Detail Modal */}
           <AnimalDetailModal
             isOpen={showDetailModal}
-            animal={selectedAnimal ? convertToAnimal(selectedAnimal) : null}
+            animal={selectedAnimal}
             onClose={handleCloseModal}
             onSave={async () => { }} // Users cannot edit
             showActions={false} // Users only view

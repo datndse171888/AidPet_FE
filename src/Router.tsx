@@ -39,7 +39,7 @@ export const Router: React.FC = () => {
                             <Route path='news/:id' element={<NewsDetail />} />
                             <Route path='cart' element={<Cart />} />
                             <Route path='adopt-animal' element={<AdoptAnimal />} />
-                            <Route path='animals' element={<Animal />} />
+                            <Route path='animal' element={<Animal />} />
                             <Route path='profile' element={
                                 <AuthorizationRoute requireAuth={true}>
                                     <Profile />

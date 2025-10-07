@@ -37,7 +37,7 @@ export const Header: React.FC = () => {
   const navItems = [
     { key: '', label: 'Home' },
     { key: 'news', label: 'News' },
-    { key: 'cart', label: 'Cart' }
+    { key: 'animal', label: 'Animal' }
   ];
 
   const handleNavClick = (key: string) => {

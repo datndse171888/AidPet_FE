@@ -73,9 +73,10 @@ export const AdoptAnimal: React.FC = () => {
       // For now, we'll use the animals from getByStatus
       const response = await animalApi.getAllAvailable(100, 0);
       const responseData: DataResponse<AnimalResponse> = response.data;
+      const data = responseData.data;
       
-      if (data.content) {
-        const animal = data.content.find(a => a.animalUuid === animalId);
+      if (data) {
+        const animal = data.find(a => a.animalUuid === animalId);
         if (animal) {
           setSelectedAnimal(animal);
           setFormData(prev => ({
