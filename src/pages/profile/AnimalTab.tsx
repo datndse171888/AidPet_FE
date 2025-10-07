@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Filter } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
-import { Animal, AnimalRequest } from '../../types/Animal';
+import { Animal, AnimalRequest, AnimalResponse } from '../../types/Animal';
 import { CreateAnimalForm } from '../shelter/CreateAnimalForm';
 import { AnimalCard } from '../../components/ui/card/AnimalCard';
 import { AnimalDetailModal } from '../../components/ui/modal/AnimalDetailModal'; // Import modal
+import { ShelterResponse } from '../../types/Shelter';
+import { animalApi } from '../../services/api/AnimalApi';
+import { DataResponse } from '../../types/DataResponse';
 
 interface AnimalTabProps {
   onViewDetail?: (animal: Animal) => void;
@@ -17,90 +20,43 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
   onEditAnimal,
   onDeleteAnimal
 }) => {
-  const [animals, setAnimals] = useState<Animal[]>([]);
+  const [animals, setAnimals] = useState<AnimalResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'AVAILABLE' | 'ADOPTED' | 'RESCUED' | 'PENDING'>('all');
   const [isLoading, setIsLoading] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  
+  const shelter: ShelterResponse = JSON.parse(localStorage.getItem('shelter') || '{}');
+  const shelterId = shelter.shelterUuid;
+
   // Modal states
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
 
   // Mock data - replace with actual API call
   useEffect(() => {
-    const mockAnimals: Animal[] = [
-      {
-        animalUuid: '1',
-        name: 'Max',
-        age: 2,
-        breed: 'Golden Retriever',
-        gender: 'Male',
-        description: 'Max is a friendly and energetic Golden Retriever who loves playing fetch and swimming. He is great with kids and other dogs.',
-        img_url: 'https://images.pexels.com/photos/551628/pexels-photo-551628.jpeg?auto=compress&cs=tinysrgb&w=400',
-        status: 'AVAILABLE',
-        category_animals: {
-          animalCateUuid: '1',
-          categoryName: 'Dogs',
-          description: '',
-        }
-      },
-      {
-        animalUuid: '2',
-        name: 'Luna',
-        age: 1,
-        breed: 'Persian Cat',
-        gender: 'Female',  
-        description: 'Luna is a gentle and affectionate Persian cat. She enjoys quiet environments and loves to be petted.',
-        img_url: 'https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg?auto=compress&cs=tinysrgb&w=400',
-        status: 'ADOPTED',
-        category_animals: {
-          animalCateUuid: '2',
-          categoryName: 'Cats',
-          description: '',
-        }
-      },
-      {
-        animalUuid: '3',
-        name: 'Charlie',
-        age: 3,
-        breed: 'Labrador Mix',
-        gender: 'Male',
-        description: 'Charlie is a rescue dog who has overcome a difficult past. He is now ready for a loving home and is very loyal.',
-        img_url: 'https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=400',
-        status: 'PENDING',
-        category_animals: {
-          animalCateUuid: '1',
-          categoryName: 'Dogs',
-          description: '',
-        }
-      },
-      {
-        animalUuid: '4',
-        name: 'Bella',
-        age: 4,
-        breed: 'Siamese Cat',
-        gender: 'Female',
-        description: 'Bella is an active and intelligent Siamese cat. She loves interactive toys and climbing.',
-        img_url: 'https://images.pexels.com/photos/982865/pexels-photo-982865.jpeg?auto=compress&cs=tinysrgb&w=400',
-        status: 'AVAILABLE',
-        category_animals: {
-          animalCateUuid: '2',
-          categoryName: 'Cats',
-          description: '',
-        }
-      }
-    ];
-    setAnimals(mockAnimals);
+    setIsLoading(true);
+    getAnimalByShelter();
+    setIsLoading(false);
   }, []);
+
+  const getAnimalByShelter = async () => {
+    try {
+      const response = await animalApi.getByShelter(shelterId, 100, 0);
+      console.log('API response:', response);
+      const data: DataResponse<AnimalResponse> = response.data;
+      setAnimals(data.data);
+    } catch (error) {
+      console.error('Failed to fetch animals:', error);
+    }
+  }
 
   const filteredAnimals = animals.filter(animal => {
     const matchesSearch = animal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         animal.breed.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         animal.category_animals?.categoryName.toLowerCase().includes(searchQuery.toLowerCase());
-    
+      animal.breed.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      animal.categoryAnimals.categoryName.toLowerCase().includes(searchQuery.toLowerCase());
+
     const matchesStatus = statusFilter === 'all' || animal.status === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
   });
 
@@ -138,32 +94,12 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
     try {
       // Simulate API call
       console.log('Saving animal:', animalData);
-      
-      // Update the animal in the list
-      if (selectedAnimal) {
-        const updatedAnimal: Animal = {
-          ...selectedAnimal,
-          name: animalData.name,
-          age: animalData.age,
-          breed: animalData.breed,
-          gender: animalData.gender,
-          description: animalData.description,
-          img_url: animalData.img_url,
-          status: animalData.status || selectedAnimal.status,
-          category_animals: {
-            animalCateUuid: animalData.categoryAnimalsUuid,
-            categoryName: ['Dogs', 'Cats', 'Birds', 'Rabbits', 'Other Pets'][parseInt(animalData.categoryAnimalsUuid) - 1] || 'Unknown',
-            description: '',
-          }
-        };
 
-        setAnimals(prev => prev.map(animal => 
-          animal.animalUuid === selectedAnimal.animalUuid ? updatedAnimal : animal
-        ));
-        
-        setSelectedAnimal(updatedAnimal);
-      }
-      
+      // Update the animal in the list
+
+
+
+
       alert('Animal updated successfully!');
     } catch (error) {
       console.error('Failed to save animal:', error);
@@ -175,11 +111,6 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
     setShowCreateForm(true);
   };
 
-  const handleAnimalCreated = (newAnimal: Animal) => {
-    // Thêm animal mới vào danh sách
-    setAnimals(prev => [newAnimal, ...prev]);
-    setShowCreateForm(false);
-  };
 
   const handleCancelCreate = () => {
     setShowCreateForm(false);
@@ -189,7 +120,6 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
   if (showCreateForm) {
     return (
       <CreateAnimalForm
-        onAnimalCreated={handleAnimalCreated}
         onCancel={handleCancelCreate}
       />
     );
@@ -236,7 +166,7 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
             />
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <Filter className="h-5 w-5 text-gray-400" />
@@ -300,8 +230,8 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
       ) : (
         <div className="text-center py-12">
           <div className="text-gray-500 mb-4">
-            {searchQuery || statusFilter !== 'all' 
-              ? 'No animals found matching your criteria' 
+            {searchQuery || statusFilter !== 'all'
+              ? 'No animals found matching your criteria'
               : 'No animals added yet'
             }
           </div>

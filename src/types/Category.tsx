@@ -12,5 +12,5 @@ export interface CategoryAnimal {
     animalCateUuid: string;
     categoryName: string;
     description: string;
-    animalList: Animal[];
+    animalList?: Animal[];
 }

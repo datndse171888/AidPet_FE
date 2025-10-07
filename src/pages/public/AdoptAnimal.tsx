@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Heart, 
   FileText, 
@@ -14,17 +14,145 @@ import {
   MapPin,
   PawPrint,
   Info,
-  Award
+  Award,
+  ArrowLeft
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/input/Input';
 import { AdoptionRequest } from '../../types/Adoption';
+import { AnimalResponse } from '../../types/Animal';
+import { FormErrors } from '../../types';
 import { navigationService } from '../../services/navigator/NavigationService';
+import { animalApi } from '../../services/api/AnimalApi';
+import { DataResponse } from '../../types/DataResponse';
 
 export const AdoptAnimal: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [selectedAnimal, setSelectedAnimal] = useState<AnimalResponse | null>(null);
+  
+  // Adoption form data
+  const [formData, setFormData] = useState<AdoptionRequest>({
+    shelterUuid: '',
+    userId: '',
+    applicationDate: '',
+    status: 'PENDING',
+    approvalDate: '',
+    animalUuid: ''
+  });
+  
+  const [errors, setErrors] = useState<FormErrors>({});
 
   const userString = localStorage.getItem('user');
   const user = userString ? JSON.parse(userString) : null;
+
+  useEffect(() => {
+    // Get animal ID from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const animalId = urlParams.get('animalId');
+    
+    if (animalId) {
+      // Fetch animal details
+      fetchAnimalDetails(animalId);
+    }
+
+    // Initialize form data with user info
+    if (user) {
+      const currentDate = new Date().toISOString().split('T')[0];
+      setFormData(prev => ({
+        ...prev,
+        userId: user.id,
+        applicationDate: currentDate
+      }));
+    }
+  }, [user]);
+
+  const fetchAnimalDetails = async (animalId: string) => {
+    try {
+      // In a real app, you'd fetch animal details by ID
+      // For now, we'll use the animals from getByStatus
+      const response = await animalApi.getAllAvailable(100, 0);
+      const responseData: DataResponse<AnimalResponse> = response.data;
+      
+      if (data.content) {
+        const animal = data.content.find(a => a.animalUuid === animalId);
+        if (animal) {
+          setSelectedAnimal(animal);
+          setFormData(prev => ({
+            ...prev,
+            animalUuid: animal.animalUuid,
+            shelterUuid: animal.shelter?.shelterUuid || ''
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching animal details:', error);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validate = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!formData.userId) {
+      newErrors.userId = 'User information is required';
+    }
+
+    if (!formData.animalUuid) {
+      newErrors.animalUuid = 'Animal selection is required';
+    }
+
+    if (!formData.shelterUuid) {
+      newErrors.shelterUuid = 'Shelter information is required';
+    }
+
+    if (!formData.applicationDate) {
+      newErrors.applicationDate = 'Application date is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmitApplication = async () => {
+    if (!user) {
+      alert('Please log in to start the adoption process');
+      navigationService.goTo('/login');
+      return;
+    }
+
+    if (!validate()) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Simulate API call to submit adoption application
+      console.log('Submitting adoption application:', formData);
+
+      // In a real app, call adoptionApi.create(formData)
+      
+      alert('Adoption application submitted successfully! Please check your email for next steps and application forms.');
+      
+      // Redirect to profile or adoption status page
+      navigationService.goTo('/profile?tab=adoptions');
+      
+    } catch (error) {
+      alert('Failed to submit adoption application. Please try again.');
+      console.error('Adoption error:', error);
+      setErrors({ general: 'Failed to submit application. Please try again.' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const adoptionSteps = [
     {
@@ -58,299 +186,379 @@ export const AdoptAnimal: React.FC = () => {
       icon: Shield,
       title: 'Age Requirement',
       description: 'Must be 18 years or older to adopt',
-      details: 'Valid government-issued ID required for verification'
+      color: 'text-blue-600'
     },
     {
       icon: Home,
       title: 'Suitable Living Space',
       description: 'Adequate space and safe environment for the pet',
-      details: 'Home visit will be conducted to ensure pet safety'
+      color: 'text-green-600'
     },
     {
       icon: DollarSign,
       title: 'Financial Stability',
       description: 'Ability to provide for pet\'s ongoing needs',
-      details: 'Including food, veterinary care, and emergency expenses'
+      color: 'text-purple-600'
     },
     {
       icon: Clock,
       title: 'Time Commitment',
-      description: 'Available time for training, exercise, and care',
-      details: 'Daily commitment of at least 2-3 hours for pet care'
+      description: 'Sufficient time for training, exercise, and care',
+      color: 'text-orange-600'
     }
   ];
 
-  const policies = [
-    {
-      title: 'Spaying/Neutering Policy',
-      description: 'All pets must be spayed/neutered within 30 days of adoption (if not already done)',
-      icon: Shield
-    },
-    {
-      title: 'Veterinary Care',
-      description: 'Adopters must provide regular veterinary care and maintain current vaccinations',
-      icon: Heart
-    },
-    {
-      title: 'No Transfer Policy',
-      description: 'Pets cannot be given away, sold, or transferred without written shelter approval',
-      icon: AlertCircle
-    },
-    {
-      title: 'Return Policy',
-      description: 'Pets can be returned to the shelter if unable to care for them - no questions asked',
-      icon: Home
-    },
-    {
-      title: 'Follow-up Visits',
-      description: 'Follow-up visits may be conducted within the first 6 months to ensure pet welfare',
-      icon: CheckCircle
-    },
-    {
-      title: 'Adoption Fees',
-      description: 'Adoption fees are non-refundable and go towards caring for other animals in need',
-      icon: DollarSign
-    }
-  ];
+  if (showForm) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Button
+                  onClick={() => setShowForm(false)}
+                  variant="outline"
+                  size="sm"
+                  className="mr-4"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Adoption Application</h1>
+                  {selectedAnimal && (
+                    <p className="text-gray-600">
+                      Applying to adopt: <span className="font-semibold text-orange-600">{selectedAnimal.name}</span>
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
 
-  const adoptionRules = [
-    'All family members must meet the pet before adoption',
-    'Landlord permission required for renters',
-    'Current pets must be up-to-date on vaccinations',
-    'Reference check from current/previous veterinarian',
-    'Adoption contract must be signed by all adult household members',
-    'Trial period of 2 weeks available for compatibility assessment',
-    'Microchip registration transfer required within 7 days',
-    'Pet insurance or emergency fund of $1,000+ recommended'
-  ];
+          {/* Selected Animal Info */}
+          {selectedAnimal && (
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <h3 className="text-lg font-semibold mb-4">Animal Information</h3>
+              <div className="flex items-start space-x-4">
+                <img
+                  src={selectedAnimal.imgUrl}
+                  alt={selectedAnimal.name}
+                  className="w-32 h-32 object-cover rounded-lg"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x300?text=No+Image';
+                  }}
+                />
+                <div>
+                  <h4 className="text-xl font-bold text-gray-900 mb-2">{selectedAnimal.name}</h4>
+                  <div className="space-y-1 text-sm text-gray-600">
+                    <p><span className="font-medium">Breed:</span> {selectedAnimal.breed}</p>
+                    <p><span className="font-medium">Age:</span> {selectedAnimal.age} years old</p>
+                    <p><span className="font-medium">Gender:</span> {selectedAnimal.gender}</p>
+                    <p><span className="font-medium">Category:</span> {selectedAnimal.categoryAnimals?.categoryName}</p>
+                    <p><span className="font-medium">Shelter:</span> {selectedAnimal.shelter?.shelterName}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
-  const handleStartAdoption = async () => {
-    if (!user) {
-      alert('Please log in to start the adoption process');
-      navigationService.goTo('/login');
-      return;
-    }
+          {/* Adoption Form */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-6">Application Details</h3>
+            
+            {errors.general && (
+              <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
+                {errors.general}
+              </div>
+            )}
 
-    setIsLoading(true);
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input
+                label="User ID"
+                name="userId"
+                type="text"
+                value={formData.userId}
+                onChange={handleChange}
+                error={errors.userId}
+                disabled
+                placeholder="Auto-filled from your profile"
+              />
 
-    try {
-      // Prepare adoption request data
-      const adoptionData: AdoptionRequest = {
-        userId: user.id
-      };
+              <Input
+                label="Animal ID"
+                name="animalUuid"
+                type="text"
+                value={formData.animalUuid}
+                onChange={handleChange}
+                error={errors.animalUuid}
+                disabled
+                placeholder="Auto-filled from selected animal"
+              />
 
-      // Simulate API call
-      // const response = await adoptionApi.submitApplication(adoptionData);
-      console.log('Adoption process started for user:', adoptionData);
+              <Input
+                label="Shelter ID"
+                name="shelterUuid"
+                type="text"
+                value={formData.shelterUuid}
+                onChange={handleChange}
+                error={errors.shelterUuid}
+                disabled
+                placeholder="Auto-filled from animal's shelter"
+              />
 
-      alert('Adoption application initiated! Please check your email for next steps and application forms.');
-      
-      // Redirect to profile or adoption status page
-      // navigationService.goTo('/profile?tab=adoptions');
-      
-    } catch (error) {
-      alert('Failed to start adoption process. Please try again.');
-      console.error('Adoption error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+              <Input
+                label="Application Date"
+                name="applicationDate"
+                type="date"
+                value={formData.applicationDate}
+                onChange={handleChange}
+                error={errors.applicationDate}
+                required
+              />
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <PawPrint className="h-20 w-20 mx-auto mb-6 animate-bounce" />
-            <h1 className="text-5xl md:text-6xl font-bold mb-6">
-              Adopt a Pet Today
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed">
-              Give a loving animal a second chance at happiness. Every adoption saves a life and creates a lifelong bond filled with unconditional love.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Input
+                label="Status"
+                name="status"
+                type="text"
+                value={formData.status}
+                onChange={handleChange}
+                disabled
+                placeholder="Pending Review"
+              />
+
+              <Input
+                label="Approval Date"
+                name="approvalDate"
+                type="date"
+                value={formData.approvalDate}
+                onChange={handleChange}
+                error={errors.approvalDate}
+                placeholder="Will be set after approval"
+              />
+            </div>
+
+            {/* Submit Button */}
+            <div className="mt-8 flex justify-end space-x-4">
               <Button
-                onClick={handleStartAdoption}
+                onClick={() => setShowForm(false)}
+                variant="outline"
                 size="lg"
-                loading={isLoading}
-                className="bg-white text-orange-600 hover:bg-orange-50 px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
               >
-                <Heart className="h-5 w-5 mr-2" />
-                Start Adoption Process
+                Cancel
               </Button>
               <Button
-                onClick={() => navigationService.goTo('/news')}
+                onClick={handleSubmitApplication}
                 size="lg"
-                variant="outline"
-                className="border-2 border-white text-white hover:bg-white hover:text-orange-600 px-8 py-4 text-lg font-semibold"
+                loading={isLoading}
+                disabled={isLoading}
+                className="bg-orange-600 hover:bg-orange-700"
               >
-                View Available Pets
+                <Heart className="h-4 w-4 mr-2" />
+                Submit Application
               </Button>
             </div>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <Heart className="h-16 w-16 mx-auto mb-6" />
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+              Adopt a Pet Today
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
+              Give a loving animal a forever home. Start your adoption journey and change a life today.
+            </p>
+            {selectedAnimal ? (
+              <Button
+                onClick={() => setShowForm(true)}
+                size="lg"
+                className="bg-white text-orange-600 hover:bg-gray-100 font-semibold"
+              >
+                <FileText className="h-5 w-5 mr-2" />
+                Start Adoption Process
+              </Button>
+            ) : (
+              <Button
+                onClick={() => navigationService.goTo('/animals')}
+                size="lg"
+                className="bg-white text-orange-600 hover:bg-gray-100 font-semibold"
+              >
+                <PawPrint className="h-5 w-5 mr-2" />
+                Browse Animals
+              </Button>
+            )}
+          </div>
+        </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Adoption Process */}
-        <section className="mb-20">
+      {/* Selected Animal Section */}
+      {selectedAnimal && (
+        <section className="py-12 bg-white">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Meet {selectedAnimal.name}
+              </h2>
+              <p className="text-lg text-gray-600">
+                This wonderful {selectedAnimal.categoryAnimals?.categoryName.toLowerCase()} is waiting for a loving home
+              </p>
+            </div>
+
+            <div className="bg-gray-50 rounded-2xl p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <div>
+                  <img
+                    src={selectedAnimal.imgUrl}
+                    alt={selectedAnimal.name}
+                    className="w-full h-80 object-cover rounded-xl shadow-lg"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=No+Image';
+                    }}
+                  />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">{selectedAnimal.name}</h3>
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center">
+                      <PawPrint className="h-5 w-5 text-orange-600 mr-3" />
+                      <span><strong>Breed:</strong> {selectedAnimal.breed}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="h-5 w-5 text-orange-600 mr-3" />
+                      <span><strong>Age:</strong> {selectedAnimal.age} years old</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Users className="h-5 w-5 text-orange-600 mr-3" />
+                      <span><strong>Gender:</strong> {selectedAnimal.gender}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <MapPin className="h-5 w-5 text-orange-600 mr-3" />
+                      <span><strong>Shelter:</strong> {selectedAnimal.shelter?.shelterName}</span>
+                    </div>
+                  </div>
+                  <p className="text-gray-600 mb-6">{selectedAnimal.description}</p>
+                  <Button
+                    onClick={() => setShowForm(true)}
+                    size="lg"
+                    className="w-full bg-orange-600 hover:bg-orange-700"
+                    disabled={!user}
+                  >
+                    {user ? (
+                      <>
+                        <Heart className="h-5 w-5 mr-2" />
+                        Start Adoption Process
+                      </>
+                    ) : (
+                      <>
+                        <Shield className="h-5 w-5 mr-2" />
+                        Login to Adopt
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Adoption Process */}
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Adoption Process</h2>
-            <p className="text-xl text-gray-600">Four simple steps to find your perfect companion</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">How Adoption Works</h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Our adoption process is designed to ensure the best match between pets and families
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {adoptionSteps.map((step, index) => {
               const Icon = step.icon;
               return (
-                <div key={index} className="relative bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100">
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <div className="bg-orange-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold shadow-lg">
-                      {step.step}
-                    </div>
+                <div key={index} className="text-center">
+                  <div className="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Icon className="h-8 w-8 text-orange-600" />
                   </div>
-                  <div className="text-center pt-6">
-                    <div className="bg-orange-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                      <Icon className="h-8 w-8 text-orange-600" />
-                    </div>
-                    <h3 className="text-xl font-semibold mb-3 text-gray-900">{step.title}</h3>
-                    <p className="text-gray-600 leading-relaxed">{step.description}</p>
+                  <div className="bg-orange-600 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4">
+                    {step.step}
                   </div>
+                  <h3 className="text-lg font-semibold mb-3">{step.title}</h3>
+                  <p className="text-gray-600">{step.description}</p>
                 </div>
               );
             })}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Requirements */}
-        <section className="mb-20">
+      {/* Requirements */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Adoption Requirements</h2>
-            <p className="text-xl text-gray-600">What we look for in potential adopters</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Adoption Requirements</h2>
+            <p className="text-lg text-gray-600">
+              Please ensure you meet these requirements before applying
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {requirements.map((req, index) => {
-              const Icon = req.icon;
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {requirements.map((requirement, index) => {
+              const Icon = requirement.icon;
               return (
-                <div key={index} className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100">
-                  <div className="flex items-start space-x-4">
-                    <div className="bg-orange-100 p-3 rounded-lg flex-shrink-0">
-                      <Icon className="h-8 w-8 text-orange-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold mb-2 text-gray-900">{req.title}</h3>
-                      <p className="text-gray-700 mb-2">{req.description}</p>
-                      <p className="text-sm text-gray-500 italic">{req.details}</p>
-                    </div>
+                <div key={index} className="bg-gray-50 p-6 rounded-xl text-center">
+                  <div className="bg-white w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-md">
+                    <Icon className={`h-6 w-6 ${requirement.color}`} />
                   </div>
+                  <h4 className="text-lg font-semibold mb-2">{requirement.title}</h4>
+                  <p className="text-gray-600 text-sm">{requirement.description}</p>
                 </div>
               );
             })}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Policies & Guidelines */}
-        <section className="mb-20">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Adoption Policies & Guidelines</h2>
-            <p className="text-xl text-gray-600">Important policies to ensure the welfare of our animals</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {policies.map((policy, index) => {
-              const Icon = policy.icon;
-              return (
-                <div key={index} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100">
-                  <div className="flex items-start space-x-4">
-                    <div className="bg-green-100 p-2 rounded-lg flex-shrink-0">
-                      <Icon className="h-6 w-6 text-green-600" />
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-semibold mb-2 text-gray-900">{policy.title}</h4>
-                      <p className="text-gray-600">{policy.description}</p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Adoption Rules */}
-        <section className="mb-20">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-100">
-            <div className="text-center mb-8">
-              <Award className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Adoption Rules & Regulations</h2>
-              <p className="text-lg text-gray-600">Please review these important rules before proceeding</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {adoptionRules.map((rule, index) => (
-                <div key={index} className="flex items-start space-x-3 bg-white p-4 rounded-lg border border-blue-200">
-                  <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-gray-700 font-medium">{rule}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Contact Information */}
-        <section className="mb-12">
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl text-white p-12">
-            <div className="text-center mb-8">
-              <Info className="h-12 w-12 mx-auto mb-4" />
-              <h2 className="text-3xl font-bold mb-4">Need More Information?</h2>
-              <p className="text-xl text-orange-100">Our adoption team is here to help you every step of the way</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm">
-                <Phone className="h-10 w-10 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Call Us</h3>
-                <p className="text-orange-100 text-lg">0857575431</p>
-                <p className="text-orange-200 text-sm mt-2">Mon-Fri: 8AM-6PM</p>
-              </div>
-              <div className="text-center bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm">
-                <Mail className="h-10 w-10 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Email Us</h3>
-                <p className="text-orange-100 text-lg">adoption@aidpet.com</p>
-                <p className="text-orange-200 text-sm mt-2">Response within 24hrs</p>
-              </div>
-              <div className="text-center bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm">
-                <MapPin className="h-10 w-10 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Visit Us</h3>
-                <p className="text-orange-100 text-lg">Saigon Hi-Tech Park</p>
-                <p className="text-orange-200 text-sm mt-2">Ho Chi Minh City</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Call to Action */}
-        <section className="text-center bg-white rounded-2xl p-12 shadow-lg border border-gray-100">
-          <Heart className="h-16 w-16 text-orange-500 mx-auto mb-6" />
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Ready to Change a Life?</h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Every adoption creates a bond that lasts a lifetime. Take the first step in giving a deserving animal their forever home.
+      {/* CTA Section */}
+      <section className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Ready to Find Your New Best Friend?
+          </h2>
+          <p className="text-xl mb-8">
+            Browse our available animals and start the adoption process today
           </p>
-          <Button
-            onClick={handleStartAdoption}
-            size="lg"
-            loading={isLoading}
-            className="px-12 py-4 text-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-          >
-            <PawPrint className="h-6 w-6 mr-3" />
-            Begin Your Adoption Journey
-          </Button>
-          <p className="text-sm text-gray-500 mt-4">
-            By clicking above, you agree to our adoption policies and terms
-          </p>
-        </section>
-      </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              onClick={() => navigationService.goTo('/animals')}
+              size="lg"
+              className="bg-white text-orange-600 hover:bg-gray-100 font-semibold"
+            >
+              <PawPrint className="h-5 w-5 mr-2" />
+              Browse Animals
+            </Button>
+            <Button
+              onClick={() => navigationService.goTo('/adoption')}
+              variant="outline"
+              size="lg"
+              className="border-white text-white hover:bg-white hover:text-orange-600"
+            >
+              <Info className="h-5 w-5 mr-2" />
+              Learn More
+            </Button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

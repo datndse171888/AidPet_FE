@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PawPrint, Tag, Save, Eye, ArrowLeft, User, Calendar, } from 'lucide-react';
+import { PawPrint, Tag, Save, Eye, ArrowLeft, User, Calendar, X, } from 'lucide-react';
 import { Input, Select } from '../../components/ui/input/Input';
 import { Button } from '../../components/ui/Button';
 import { FormErrors } from '../../types';
@@ -7,11 +7,10 @@ import { AnimalRequest, Animal } from '../../types/Animal';
 import { animalApi } from '../../services/api/AnimalApi';
 
 interface CreateAnimalFormProps {
-    onAnimalCreated: (animal: Animal) => void;
     onCancel: () => void;
 }
 
-export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onAnimalCreated, onCancel }) => {
+export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onCancel }) => {
     const shelter = localStorage.getItem('shelter') || '';
     const shelterData = shelter ? JSON.parse(shelter) : null;
     const shelterUuid = shelterData ? shelterData.shelterUuid : '';
@@ -79,6 +78,23 @@ export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onAnimalCrea
         return Object.keys(newErrors).length === 0;
     };
 
+    const handleRemoveImage = () => {
+        setImageFile(null);
+        setImagePreview('');
+        setFormData(prev => ({ ...prev, img_url: '' }));
+        
+        // Clear file input
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        if (fileInput) {
+            fileInput.value = '';
+        }
+        
+        // Clear error nếu có
+        if (errors.img_url) {
+            setErrors(prev => ({ ...prev, img_url: '' }));
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -93,25 +109,6 @@ export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onAnimalCrea
             console.table(formData);
             const response = await animalApi.create(formData);
             console.log('Animal created:', response.data);
-
-            // Tạo mock animal mới để thêm vào danh sách
-            const newAnimal: Animal = {
-                animalUuid: Date.now().toString(), // Mock UUID
-                name: formData.name,
-                age: formData.age,
-                breed: formData.breed,
-                gender: formData.gender,
-                description: formData.description,
-                imgUrl: imagePreview || formData.img_url,
-                category_animals:{
-                    animalCateUuid: 'uuid',
-                    categoryName: 'category name',
-                    description: 'description',
-                    animalList: []
-                },
-                status: 'AVAILABLE',
-            };
-            onAnimalCreated(newAnimal);
         } catch (error) {
             setErrors({ general: 'Failed to add animal. Please try again.' });
         } finally {
@@ -191,12 +188,21 @@ export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onAnimalCrea
                         <h3 className="text-xl font-semibold text-gray-900">Animal Preview</h3>
 
                         {imagePreview && (
-                            <div className="aspect-w-16 aspect-h-9">
+                            <div className="relative aspect-w-16 aspect-h-9">
                                 <img
                                     src={imagePreview}
                                     alt="Animal preview"
                                     className="w-full h-64 object-cover rounded-lg"
                                 />
+                                {/* Nút xóa ảnh trong preview mode */}
+                                <button
+                                    type="button"
+                                    onClick={handleRemoveImage}
+                                    className="absolute top-2 right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors duration-200 shadow-lg"
+                                    title="Remove image"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
                             </div>
                         )}
 
@@ -322,15 +328,29 @@ export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onAnimalCrea
                                         className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
                                     />
                                 </div>
-                                {imagePreview && (
-                                    <div className="w-20 h-20">
+                                {(imagePreview || formData.img_url) && (
+                                <div className="relative inline-block">
+                                    <div className="w-32 h-32">
                                         <img
-                                            src={imagePreview}
+                                            src={imagePreview || formData.img_url}
                                             alt="Animal preview"
                                             className="w-full h-full object-cover rounded-lg border border-gray-300"
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x300?text=Invalid+Image';
+                                            }}
                                         />
                                     </div>
-                                )}
+                                    {/* Nút xóa ảnh overlay */}
+                                    <button
+                                        type="button"
+                                        onClick={handleRemoveImage}
+                                        className="absolute -top-2 -right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors duration-200 shadow-lg"
+                                        title="Remove image"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            )}
                             </div>
                             {errors.img_url && (
                                 <p className="text-sm text-red-600">{errors.img_url}</p>

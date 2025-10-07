@@ -32,8 +32,7 @@ export const AnimalDetailModal: React.FC<AnimalDetailModalProps> = ({
         breed: '',
         gender: '',
         description: '',
-        img_url: '',
-        status: 'AVAILABLE',
+        img_url: ''
     });
 
     const categories = [
@@ -67,8 +66,7 @@ export const AnimalDetailModal: React.FC<AnimalDetailModalProps> = ({
                 breed: animal.breed,
                 gender: animal.gender,
                 description: animal.description,
-                img_url: animal.img_url,
-                status: animal.status,
+                img_url: animal.imgUrl
             });
         }
     }, [animal]);
@@ -185,8 +183,7 @@ export const AnimalDetailModal: React.FC<AnimalDetailModalProps> = ({
                 breed: animal.breed,
                 gender: animal.gender,
                 description: animal.description,
-                img_url: animal.img_url,
-                status: animal.status,
+                img_url: animal.imgUrl
             });
         }
         setIsEditMode(false);
@@ -256,7 +253,7 @@ export const AnimalDetailModal: React.FC<AnimalDetailModalProps> = ({
                                 {/* Animal Image */}
                                 <div className="aspect-w-16 aspect-h-12 bg-gray-200 rounded-xl overflow-hidden">
                                     <img
-                                        src={isEditMode ? editData.img_url : animal.img_url}
+                                        src={isEditMode ? editData.img_url : animal.imgUrl}
                                         alt={isEditMode ? editData.name : animal.name}
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
@@ -365,16 +362,6 @@ export const AnimalDetailModal: React.FC<AnimalDetailModalProps> = ({
                                                 icon={<User className="h-5 w-5 text-gray-400" />}
                                             />
                                         </div>
-
-                                        <Select
-                                            label="Status"
-                                            name="status"
-                                            value={editData.status}
-                                            onChange={handleChange}
-                                            error={errors.status}
-                                            options={statusOptions}
-                                            icon={<Info className="h-5 w-5 text-gray-400" />}
-                                        />
 
                                         <div className="space-y-2">
                                             <label className="block text-sm font-medium text-gray-700">

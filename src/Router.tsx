@@ -22,9 +22,9 @@ import { PostManager } from './pages/admin/PostManager'
 import { Dashboard } from './pages/admin/Dashboard'
 import { AdminProfile } from './pages/admin/AdminProfile'
 import { AdminSetting } from './pages/admin/AdminSetting'
-import { Adoption } from './pages/public/Adoption'
 import { AdoptAnimal } from './pages/public/AdoptAnimal'
 import { AnimalManager } from './pages/admin/AnimalManager'
+import { Animal } from './pages/public/Animal'
 
 export const Router: React.FC = () => {
     return (
@@ -38,8 +38,8 @@ export const Router: React.FC = () => {
                             <Route path='news' element={<News />} />
                             <Route path='news/:id' element={<NewsDetail />} />
                             <Route path='cart' element={<Cart />} />
-                            <Route path='adoption' element={<Adoption />} />
                             <Route path='adopt-animal' element={<AdoptAnimal />} />
+                            <Route path='animals' element={<Animal />} />
                             <Route path='profile' element={
                                 <AuthorizationRoute requireAuth={true}>
                                     <Profile />

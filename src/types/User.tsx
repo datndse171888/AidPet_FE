@@ -3,6 +3,8 @@ import { Order } from "./Order";
 import { Shelter } from "./Shelter";
 import { Sponsor } from "./Sponsor";
 
+type role = 'USER' | 'ADMIN' | 'STAFF' | 'SPONSOR' | 'SHELTER';
+
 export interface LoginFormData {
   userName: string;
   password: string;
@@ -15,7 +17,7 @@ export interface RegisterFormData {
   password: string;
   fullName: string;
   address: string;
-  role: 'USER' | 'ADMIN' | 'STAFF' | 'SPONSOR' | 'SHELTER';
+  role: role;
   gender: boolean;
   imgUrl?: string;
 }
@@ -27,7 +29,7 @@ export interface AccountResponse {
   phone: string,
   email: string,
   address: string,
-  role: 'USER' | 'ADMIN' | 'STAFF' | 'SPONSOR' | 'SHELTER',
+  role: role,
   token: string,
   image: string
 }
@@ -46,12 +48,12 @@ export interface Account {
   gender: boolean;
   address: string;
   imgUrl: string;
-  role: 'USER' | 'ADMIN' | 'STAFF' | 'SPONSOR' | 'SHELTER';
+  role: role;
   isDeleted: boolean;
-  adoptionList: Adoption[];
-  orderList: Order[];
-  sponsors: Sponsor[];
-  shelter: Shelter;
+  adoptionList?: Adoption[];
+  orderList?: Order[];
+  sponsors?: Sponsor[];
+  shelter?: Shelter;
   createdAt: string;
   enabled: boolean;
 }

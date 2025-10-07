@@ -33,5 +33,5 @@ export interface Shelter {
     description: string;
     adoptions?: Adoption[];
     account: Account;
-    animalList: Animal[];
+    animalList?: Animal[];
 }

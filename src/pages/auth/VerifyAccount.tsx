@@ -118,7 +118,7 @@ export const VerifyAccount: React.FC = () => {
               loading={isLoading}
               disabled={isLoading}
             >
-              Verify
+              {isLoading ? 'Verifying...' : 'Verify'}
             </Button>
           </form>
         </div>
