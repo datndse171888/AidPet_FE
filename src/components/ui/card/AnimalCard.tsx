@@ -1,12 +1,12 @@
 import React from 'react';
 import { Eye, Edit, Trash2, Calendar, Tag, User, Heart } from 'lucide-react';
 import { Button } from '../Button';
-import { Animal } from '../../../types/Animal';
+import { Animal, AnimalResponse } from '../../../types/Animal';
 
 interface AnimalCardProps {
-  animal: Animal;
-  onViewDetail: (animal: Animal) => void;
-  onEdit: (animal: Animal) => void;
+  animal: AnimalResponse;
+  onViewDetail: (animal: AnimalResponse) => void;
+  onEdit: (animal: AnimalResponse) => void;
   onDelete: (animalId: string) => void;
   showShelterInfo?: boolean;
 }
@@ -37,7 +37,7 @@ export const AnimalCard: React.FC<AnimalCardProps> = ({
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border border-gray-200 flex flex-col h-full">
       <div className="aspect-w-16 aspect-h-9 bg-gray-200 flex-shrink-0">
         <img
-          src={animal.img_url}
+          src={animal.imgUrl}
           alt={animal.name}
           className="w-full h-48 object-cover"
         />
@@ -70,10 +70,10 @@ export const AnimalCard: React.FC<AnimalCardProps> = ({
               <User className="h-4 w-4 mr-1" />
               <span>{animal.gender}</span>
             </div>
-            {animal.category_animals && (
+            {animal.categoryAnimals && (
               <div className="flex items-center">
                 <Heart className="h-4 w-4 mr-1" />
-                <span>{animal.category_animals.categoryName}</span>
+                <span>{animal.categoryAnimals.categoryName}</span>
               </div>
             )}
           </div>

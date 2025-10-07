@@ -30,7 +30,7 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
 
   // Modal states
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
+  const [selectedAnimal, setSelectedAnimal] = useState<AnimalResponse | null>(null);
 
   // Mock data - replace with actual API call
   useEffect(() => {
@@ -41,7 +41,7 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
 
   const getAnimalByShelter = async () => {
     try {
-      const response = await animalApi.getByShelter(shelterId, 100, 0);
+      const response = await animalApi.getByShelter(shelterId, 100, 1);
       console.log('API response:', response);
       const data: DataResponse<AnimalResponse> = response.data;
       setAnimals(data.data);
@@ -60,7 +60,7 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
     return matchesSearch && matchesStatus;
   });
 
-  const handleViewDetail = (animal: Animal) => {
+  const handleViewDetail = (animal: AnimalResponse) => {
     setSelectedAnimal(animal);
     setShowDetailModal(true);
     if (onViewDetail) {
@@ -68,7 +68,7 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
     }
   };
 
-  const handleEditAnimal = (animal: Animal) => {
+  const handleEditAnimal = (animal: AnimalResponse) => {
     setSelectedAnimal(animal);
     setShowDetailModal(true);
     if (onEditAnimal) {
