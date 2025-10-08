@@ -5,17 +5,20 @@ import { Mail, PawPrint } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/input/Input';
 import { navigationService } from '../../utils/NavigationService';
+import { ForgotPasswordRequest } from '../../types/User';
 
 export const ForgotPassword: React.FC = () => {
-  const [email, setEmail] = useState<string>('')
-  
+  const [formData, setFormData] = useState<ForgotPasswordRequest>({
+    email: '',
+  })
+
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!/\S+@\S+\.\S+/.test(email)) {
+    if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email';
     }
 
@@ -35,7 +38,7 @@ export const ForgotPassword: React.FC = () => {
 
     try {
       // Simulate API call
-      const response = await authApi.forgotPassword(email);
+      const response = await authApi.forgotPassword(formData);
       console.log('Logging in with:', response.data);
       // On success, redirect or show success message
       // alert('Login successful!');
@@ -82,9 +85,9 @@ export const ForgotPassword: React.FC = () => {
               label="Email"
               name="email"
               type="email"
-              value={email}
+              value={formData.email}
               onChange={e => {
-                setEmail(e.target.value)
+                setFormData(prev => ({ ...prev, email: e.target.value }))
                 if (errors['email']) {
                   setErrors(prev => ({ ...prev, ['email']: '' }));
                 }
@@ -97,9 +100,9 @@ export const ForgotPassword: React.FC = () => {
             />
 
             <div className="flex items-center justify-center">
-                <a href="/login" className="font-medium text-orange-600 hover:text-orange-500">
-                  Did you remember your password?
-                </a>
+              <a href="/login" className="font-medium text-orange-600 hover:text-orange-500">
+                Did you remember your password?
+              </a>
             </div>
 
             <Button

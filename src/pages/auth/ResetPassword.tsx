@@ -5,9 +5,18 @@ import { Lock, PawPrint } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/input/Input';
 import { navigationService } from '../../utils/NavigationService';
+import { ResetPasswordRequest } from '../../types/User';
+import { useSearchParams } from 'react-router-dom';
 
 export const ResetPassword: React.FC = () => {
-  const [password, setPassword] = useState<string>('')
+
+  const [search] = useSearchParams();
+  const token = search.get('token') || '';
+  console.log('Token from URL:', token);
+
+  const [formData, setFormData] = useState<ResetPasswordRequest>({
+    password: '',
+  })
   const [confirmPassword, setConfirmPassword] = useState<string>('')
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -16,15 +25,15 @@ export const ResetPassword: React.FC = () => {
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (password) {
+    if (formData.password) {
       newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
+    } else if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
 
     if (!confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password';
-    } else if (password !== confirmPassword) {
+    } else if (formData.password !== confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
@@ -44,7 +53,7 @@ export const ResetPassword: React.FC = () => {
 
     try {
       // Simulate API call
-      const response = await authApi.resetPassword(password);
+      const response = await authApi.resetPassword(formData, token);
       console.log('Reset password response:', response.data);
       // On success, redirect or show success message
       // alert('Login successful!');
@@ -91,9 +100,9 @@ export const ResetPassword: React.FC = () => {
               label="Password"
               name="password"
               type="password"
-              value={password}
+              value={formData.password}
               onChange={e => {
-                setPassword(e.target.value)
+                setFormData(prev => ({ ...prev, password: e.target.value }))
                 if (errors['password']) {
                   setErrors(prev => ({ ...prev, ['password']: '' }));
                 }
@@ -121,7 +130,7 @@ export const ResetPassword: React.FC = () => {
             />
 
             <div className="flex items-center justify-center">
-              
+
             </div>
 
             <Button

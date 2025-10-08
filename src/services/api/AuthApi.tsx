@@ -1,4 +1,4 @@
-import { LoginFormData, AccountResponse, RegisterFormData, VerifyTokenRequest } from "../../types/User";
+import { LoginFormData, AccountResponse, RegisterFormData, VerifyTokenRequest, ForgotPasswordRequest, ResetPasswordRequest, ChangePasswordRequest } from "../../types/User";
 import { api } from "../../utils/Axios";
 
 // Auth API methods
@@ -34,19 +34,16 @@ export const authApi = {
   //     return api.put('/auth/profile', userData);
   //   },
 
-  //   changePassword: (data: {
-  //     currentPassword: string;
-  //     newPassword: string;
-  //   }) => {
-  //     return api.put('/auth/change-password', data);
-  //   },
-
-  forgotPassword: (email: string) => {
-    return api.post('/users/forgot-password', { email });
+  changePassword: (data: ChangePasswordRequest) => {
+    return api.post('/users/change-password', data);
   },
 
-  resetPassword: (password: string) => {
-    return api.post('/auth/reset-password', { password });
+  forgotPassword: (data: ForgotPasswordRequest) => {
+    return api.post('/users/forgot-password', data);
+  },
+
+  resetPassword: (data: ResetPasswordRequest, token: string) => {
+    return api.post('/user/reset-password', data, { headers: { Authorization: `Bearer ${token}` } });
   },
 };
 

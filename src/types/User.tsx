@@ -57,3 +57,16 @@ export interface Account {
   createdAt: string;
   enabled: boolean;
 }
+
+export interface ResetPasswordRequest {
+  password: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ChangePasswordRequest{
+  currentPassword: string;
+  newPassword: string;
+}
