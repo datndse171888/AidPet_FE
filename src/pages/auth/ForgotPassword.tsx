@@ -4,7 +4,7 @@ import { authApi } from '../../services/api/AuthApi';
 import { Mail, PawPrint } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/input/Input';
-import { navigationService } from '../../services/navigator/NavigationService';
+import { navigationService } from '../../utils/NavigationService';
 
 export const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState<string>('')

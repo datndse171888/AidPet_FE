@@ -1,7 +1,7 @@
 import React from 'react';
 import { PawPrint, LayoutDashboard, FileText, User, Settings, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
-import { navigationService } from '../../services/navigator/NavigationService';
+import { navigationService } from '../../utils/NavigationService';
 
 interface SidebarProps {
   collapsed: boolean;

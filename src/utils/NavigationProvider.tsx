@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { navigationService } from '../services/navigator/NavigationService';
+import { navigationService } from './NavigationService';
 
 interface NavigationProviderProps {
   children: React.ReactNode;

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Bell, Search, User } from 'lucide-react';
-import { navigationService } from '../../../services/navigator/NavigationService';
+import { navigationService } from '../../../utils/NavigationService';
 import { AccountResponse } from '../../../types/User';
 
 export const AdminHeader: React.FC = () => {

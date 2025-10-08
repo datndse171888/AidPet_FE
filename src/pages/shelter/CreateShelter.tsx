@@ -5,7 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { FormErrors } from '../../types';
 import { ShelterRequest, ShelterResponse } from '../../types/Shelter';
 import { shelterApi } from '../../services/api/ShelterApi';
-import { navigationService } from '../../services/navigator/NavigationService';
+import { navigationService } from '../../utils/NavigationService';
 import { useLocation } from 'react-router-dom';
 
 export const CreateShelter: React.FC = () => {

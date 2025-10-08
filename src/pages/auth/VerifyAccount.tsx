@@ -3,7 +3,7 @@ import { FormErrors } from '../../types';
 import { PawPrint, ShieldCheck } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/input/Input';
-import { navigationService } from '../../services/navigator/NavigationService';
+import { navigationService } from '../../utils/NavigationService';
 import { VerifyTokenRequest } from '../../types/User';
 import { useSearchParams } from 'react-router-dom';
 import { authApi } from '../../services/api/AuthApi';

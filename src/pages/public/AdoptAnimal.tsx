@@ -22,7 +22,7 @@ import { Input } from '../../components/ui/input/Input';
 import { AdoptionRequest } from '../../types/Adoption';
 import { AnimalResponse } from '../../types/Animal';
 import { FormErrors } from '../../types';
-import { navigationService } from '../../services/navigator/NavigationService';
+import { navigationService } from '../../utils/NavigationService';
 import { animalApi } from '../../services/api/AnimalApi';
 import { DataResponse } from '../../types/DataResponse';
 

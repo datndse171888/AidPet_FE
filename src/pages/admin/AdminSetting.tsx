@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Lock, LogOut, Shield, Bell, Globe, Database } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/input/Input';
-import { navigationService } from '../../services/navigator/NavigationService';
+import { navigationService } from '../../utils/NavigationService';
 
 interface AdminSettingProps {
   onPasswordChange?: (passwordData: any) => void;

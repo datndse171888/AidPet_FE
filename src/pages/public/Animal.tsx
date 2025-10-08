@@ -4,7 +4,7 @@ import { AnimalResponse } from '../../types/Animal';
 import { AnimalDetailModal } from '../../components/ui/modal/AnimalDetailModal';
 import { animalApi } from '../../services/api/AnimalApi';
 import { DataResponse } from '../../types/DataResponse';
-import { navigationService } from '../../services/navigator/NavigationService';
+import { navigationService } from '../../utils/NavigationService';
 import { Button } from '../../components/ui/Button';
 
 export const Animal: React.FC = () => {

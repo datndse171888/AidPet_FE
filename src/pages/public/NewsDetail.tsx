@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Calendar, Eye, Tag, ArrowLeft, Share2, Heart } from 'lucide-react';
 import { Post } from '../../types/Post';
 import { Button } from '../../components/ui/Button';
-import { navigationService } from '../../services/navigator/NavigationService';
+import { navigationService } from '../../utils/NavigationService';
 
 export const NewsDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();

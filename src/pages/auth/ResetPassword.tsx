@@ -4,7 +4,7 @@ import { authApi } from '../../services/api/AuthApi';
 import { Lock, PawPrint } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/input/Input';
-import { navigationService } from '../../services/navigator/NavigationService';
+import { navigationService } from '../../utils/NavigationService';
 
 export const ResetPassword: React.FC = () => {
   const [password, setPassword] = useState<string>('')

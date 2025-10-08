@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Filter, Calendar, Eye, Tag } from 'lucide-react';
 import { Post } from '../../types/Post';
 import { NewsPostCard } from '../../components/ui/card/NewsPostCard';
-import { navigationService } from '../../services/navigator/NavigationService';
+import { navigationService } from '../../utils/NavigationService';
 
 export const News: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);

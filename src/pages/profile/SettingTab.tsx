@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Lock, LogOut } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/input/Input';
-import { navigationService } from '../../services/navigator/NavigationService';
+import { navigationService } from '../../utils/NavigationService';
 
 interface SettingTabProps {
   onPasswordChange?: (passwordData: any) => void;

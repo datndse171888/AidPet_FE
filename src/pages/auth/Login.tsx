@@ -5,7 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { FormErrors } from '../../types';
 import { LoginFormData } from '../../types/User';
 import { authApi } from '../../services/api/AuthApi';
-import { navigationService } from '../../services/navigator/NavigationService';
+import { navigationService } from '../../utils/NavigationService';
 
 export const Login: React.FC = () => {
   const [formData, setFormData] = useState<LoginFormData>({
