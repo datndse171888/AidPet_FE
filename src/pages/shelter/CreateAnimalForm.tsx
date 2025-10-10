@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PawPrint, Tag, Save, Eye, ArrowLeft, User, Calendar, X, } from 'lucide-react';
 import { Input, Select } from '../../components/ui/input/Input';
 import { Button } from '../../components/ui/Button';
 import { FormErrors } from '../../types';
-import { AnimalRequest, Animal } from '../../types/Animal';
+import { AnimalRequest } from '../../types/Animal';
 import { animalApi } from '../../services/api/AnimalApi';
+import { CategoryAnimalResponse } from '../../types/Category';
+import { categoryApi } from '../../services/api/CategoryApi';
 
 interface CreateAnimalFormProps {
     onCancel: () => void;
@@ -14,6 +16,8 @@ export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onCancel }) 
     const shelter = localStorage.getItem('shelter') || '';
     const shelterData = shelter ? JSON.parse(shelter) : null;
     const shelterUuid = shelterData ? shelterData.shelterUuid : '';
+
+    const [categories, setCategories] = useState<CategoryAnimalResponse[]>([]);
     const [formData, setFormData] = useState<AnimalRequest>({
         shelterUuid: shelterUuid, // Get from current user/shelter context
         categoryAnimalsUuid: '',
@@ -31,17 +35,26 @@ export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onCancel }) 
     const [isLoading, setIsLoading] = useState(false);
     const [isPreview, setIsPreview] = useState(false);
 
-    const categories = [
-        { value: '1', label: 'Dogs' },
-        { value: '2', label: 'Cats' },
-        { value: '3', label: 'Birds' },
-        { value: '4', label: 'Rabbits' }
-    ];
-
     const genderOptions = [
         { value: 'Male', label: 'Male' },
         { value: 'Female', label: 'Female' },
     ];
+
+    useEffect(() => {
+        setIsLoading(true);
+        getCategories();
+        setIsLoading(false);
+    }, []);
+
+    const getCategories = async () => {
+        try {
+            const response = await categoryApi.getAllCategoryAnimals();
+            setCategories(response.data.listData);
+        } catch (error) {
+            console.error('Failed to fetch categories', error);
+        }
+    };
+
 
     const validate = (): boolean => {
         const newErrors: FormErrors = {};
@@ -82,13 +95,13 @@ export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onCancel }) 
         setImageFile(null);
         setImagePreview('');
         setFormData(prev => ({ ...prev, img_url: '' }));
-        
+
         // Clear file input
         const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
         if (fileInput) {
             fileInput.value = '';
         }
-        
+
         // Clear error nếu có
         if (errors.img_url) {
             setErrors(prev => ({ ...prev, img_url: '' }));
@@ -282,7 +295,7 @@ export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onCancel }) 
                                 error={errors.categoryAnimalsUuid}
                                 options={[
                                     { value: '', label: 'Select category...' },
-                                    ...categories
+                                    ...categories.map(cat => ({ value: cat.categoryId, label: cat.categoryName }))
                                 ]}
                                 icon={<Tag className="h-5 w-5 text-gray-400" />}
                             />
@@ -329,28 +342,28 @@ export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onCancel }) 
                                     />
                                 </div>
                                 {(imagePreview || formData.img_url) && (
-                                <div className="relative inline-block">
-                                    <div className="w-32 h-32">
-                                        <img
-                                            src={imagePreview || formData.img_url}
-                                            alt="Animal preview"
-                                            className="w-full h-full object-cover rounded-lg border border-gray-300"
-                                            onError={(e) => {
-                                                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x300?text=Invalid+Image';
-                                            }}
-                                        />
+                                    <div className="relative inline-block">
+                                        <div className="w-32 h-32">
+                                            <img
+                                                src={imagePreview || formData.img_url}
+                                                alt="Animal preview"
+                                                className="w-full h-full object-cover rounded-lg border border-gray-300"
+                                                onError={(e) => {
+                                                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x300?text=Invalid+Image';
+                                                }}
+                                            />
+                                        </div>
+                                        {/* Nút xóa ảnh overlay */}
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveImage}
+                                            className="absolute -top-2 -right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors duration-200 shadow-lg"
+                                            title="Remove image"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
                                     </div>
-                                    {/* Nút xóa ảnh overlay */}
-                                    <button
-                                        type="button"
-                                        onClick={handleRemoveImage}
-                                        className="absolute -top-2 -right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors duration-200 shadow-lg"
-                                        title="Remove image"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </button>
-                                </div>
-                            )}
+                                )}
                             </div>
                             {errors.img_url && (
                                 <p className="text-sm text-red-600">{errors.img_url}</p>

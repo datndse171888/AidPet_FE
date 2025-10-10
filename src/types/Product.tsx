@@ -22,3 +22,22 @@ export interface ProductDetail{
     image_url: string;
     product: Product;
 }
+
+export interface ProductResponse {
+    productId: string;
+    productName: string;
+    productDescription: string;
+    supplierId?: string | null;
+}
+
+export interface ProductDetailResponse {
+    detailId: string;
+    sku: string;
+    variantName: string;
+    color: string;
+    storage: string;
+    price: number;
+    stockQuantity: number;
+    imageUrl: string;
+    productId: string;
+}

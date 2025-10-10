@@ -1,9 +1,9 @@
+import { CategoryAnimalResponse } from "../../types/Category"
+import { DataResponse } from "../../types/DataResponse"
 import { api } from "../../utils/Axios"
 
-export const CategoryApi = {
-    getAllCategoryAnimals: (id: string, size: number, page: number) => {
-        return api.get('/categoryAnimal', {
-            params: { size, page }
-        })
+export const categoryApi = {
+    getAllCategoryAnimals: () => {
+        return api.get<DataResponse<CategoryAnimalResponse>>('/categoryAnimal/get?page=0&size=100')
     }
 }

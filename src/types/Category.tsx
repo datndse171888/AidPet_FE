@@ -14,3 +14,10 @@ export interface CategoryAnimal {
     description: string;
     animalList?: Animal[];
 }
+
+
+export interface CategoryAnimalResponse {
+    categoryId: string;
+    categoryName: string;
+    description: string;
+}

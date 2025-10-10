@@ -1,5 +1,5 @@
 export interface DataResponse<T> {
-    data: T[];
+    listData: T[];
     pageNumber: number;
     totalElements: number;
     totalPages: number;

@@ -13,7 +13,6 @@ import { VerifyAccount } from './pages/auth/VerifyAccount'
 import { CreateShelter } from './pages/shelter/CreateShelter'
 import { NavigationProvider } from './utils/NavigationProvider'
 import { Unauthorized } from './pages/error/Unauthorized'
-import { Cart } from './pages/public/Cart'
 import { News } from './pages/public/News'
 import { NewsDetail } from './pages/public/NewsDetail'
 import { Notfound } from './pages/error/Notfound'
@@ -25,6 +24,7 @@ import { AdminSetting } from './pages/admin/AdminSetting'
 import { AdoptAnimal } from './pages/public/AdoptAnimal'
 import { AnimalManager } from './pages/admin/AnimalManager'
 import { Animal } from './pages/public/Animal'
+import { Product } from './pages/public/Product'
 
 export const Router: React.FC = () => {
     return (
@@ -37,7 +37,7 @@ export const Router: React.FC = () => {
                             <Route index element={<Homepage />} />
                             <Route path='news' element={<News />} />
                             <Route path='news/:id' element={<NewsDetail />} />
-                            <Route path='cart' element={<Cart />} />
+                            <Route path='product' element={<Product />} />
                             <Route path='adopt-animal' element={<AdoptAnimal />} />
                             <Route path='animal' element={<Animal />} />
                             <Route path='profile' element={

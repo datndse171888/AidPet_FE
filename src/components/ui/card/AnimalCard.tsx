@@ -1,7 +1,7 @@
 import React from 'react';
 import { Eye, Edit, Trash2, Calendar, Tag, User, Heart } from 'lucide-react';
 import { Button } from '../Button';
-import { Animal, AnimalResponse } from '../../../types/Animal';
+import { AnimalResponse } from '../../../types/Animal';
 
 interface AnimalCardProps {
   animal: AnimalResponse;
