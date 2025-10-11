@@ -52,6 +52,8 @@ export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onCancel }) 
             setCategories(response.data.listData);
         } catch (error) {
             console.error('Failed to fetch categories', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 

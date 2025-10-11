@@ -7,11 +7,18 @@ type status = 'CANCEL' | 'APPROVE' | 'REJECT' | 'PENDING';
 export interface AdoptionRequest {
     shelterUuid: string;
     userId: string;
+    animalUuid: string;
+}
+
+export interface AdoptionResponse {
+    shelterUuid: string;
+    userId: string;
     applicationDate: string;
     status: status;
     approvalDate: string;
     animalUuid: string;
 }
+
 
 export interface AdoptionResponse {
     adoptionId: string;

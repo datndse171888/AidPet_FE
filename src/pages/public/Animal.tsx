@@ -1,46 +1,60 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Heart, PawPrint, Eye } from 'lucide-react';
+import { Search, Filter, Heart, PawPrint } from 'lucide-react';
 import { AnimalResponse } from '../../types/Animal';
 import { AnimalDetailModal } from '../../components/ui/modal/AnimalDetailModal';
 import { animalApi } from '../../services/api/AnimalApi';
-import { DataResponse } from '../../types/DataResponse';
-import { navigationService } from '../../utils/NavigationService';
 import { Button } from '../../components/ui/Button';
+import { PublicAnimalCard } from '../../components/ui/card/PublicAnimalCard';
+import { adoptionApi } from '../../services/api/AdoptionApi';
+import { useAuth } from '../../hooks/AuthorizationRoute';
+import { navigationService } from '../../utils/NavigationService';
+import { AdoptionRequest } from '../../types/Adoption';
+import { CategoryAnimalResponse } from '../../types/Category';
+import { categoryApi } from '../../services/api/CategoryApi';
 
 export const Animal: React.FC = () => {
   const [animals, setAnimals] = useState<AnimalResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmittingAdoption, setIsSubmittingAdoption] = useState(false);
 
   // Modal states
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedAnimal, setSelectedAnimal] = useState<AnimalResponse | null>(null);
 
+  const user = useAuth();
+
   // Categories for filter
-  const categories = [
-    { value: 'all', label: 'All Categories' },
-    { value: '1', label: 'Dogs' },
-    { value: '2', label: 'Cats' },
-    { value: '3', label: 'Birds' },
-    { value: '4', label: 'Rabbits' },
-    { value: '5', label: 'Other Pets' },
-  ];
+  const [categories, setCategories] = useState<CategoryAnimalResponse[]>([]);
 
   useEffect(() => {
-    fetchAnimals();
+    getAllAvailableAnimals();
+    getCategories();
   }, []);
 
-  const fetchAnimals = async () => {
+  const getAllAvailableAnimals = async () => {
     setIsLoading(true);
     try {
       // Fetch available animals for adoption
       const response = await animalApi.getAllAvailable(100, 0);
-      const responseData: DataResponse<AnimalResponse> = response.data;
-      setAnimals(responseData.data);
+      const data = response.data;
+      setAnimals(data.listData);
 
     } catch (error) {
       console.error('Failed to fetch animals:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getCategories = async () => {
+    setIsLoading(true);
+    try {
+      const response = await categoryApi.getAllCategoryAnimals();
+      setCategories(response.data.listData);
+    } catch (error) {
+      console.error('Failed to fetch categories', error);
     } finally {
       setIsLoading(false);
     }
@@ -68,9 +82,40 @@ export const Animal: React.FC = () => {
     setSelectedAnimal(null);
   };
 
-  const handleAdoption = (animal: AnimalResponse) => {
-    // Navigate to adoption page with animal info
-    navigationService.goTo(`/adopt-animal?animalId=${animal.animalUuid}`);
+  const handleAdoption = async (animal: AnimalResponse) => {
+    // Check if user is logged in
+    if (!user?.isAuthenticated) {
+      alert('Please log in to adopt a pet');
+      navigationService.goTo('/login');
+      return;
+    }
+
+    // Confirm adoption intent
+    const confirmAdopt = window.confirm(
+      `Are you sure you want to submit an adoption request for ${animal.name}?`
+    );
+    
+    if (!confirmAdopt) {
+      return;
+    }
+
+    setIsSubmittingAdoption(true);
+
+    const formData :AdoptionRequest = {
+      shelterUuid: animal.shelter.shelterUuid,
+      userId: user?.uuid || '',
+      animalUuid: animal.animalUuid
+    };
+
+    try {
+      const response = await adoptionApi.create(formData)
+      const data = response.data;
+      console.log('Adoption request submitted:', data);
+    } catch (error) {
+      console.error('Failed to submit adoption request:', error);
+    } finally {
+      setIsSubmittingAdoption(false);
+    }
   };
 
   return (
@@ -90,7 +135,7 @@ export const Animal: React.FC = () => {
               <Button
                 onClick={() => document.getElementById('animals-section')?.scrollIntoView({ behavior: 'smooth' })}
                 size="lg"
-                className="bg-white text-orange-600 hover:bg-gray-100 font-semibold"
+                className="border border-white text-white hover:bg-white hover:text-orange-600"
               >
                 <Heart className="h-5 w-5 mr-2" />
                 Browse Animals
@@ -138,8 +183,8 @@ export const Animal: React.FC = () => {
                     className="border border-gray-300 rounded-lg px-3 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
                   >
                     {categories.map(category => (
-                      <option key={category.value} value={category.value}>
-                        {category.label}
+                      <option key={category.categoryId} value={category.categoryId}>
+                        {category.categoryName}
                       </option>
                     ))}
                   </select>
@@ -184,6 +229,7 @@ export const Animal: React.FC = () => {
                   animal={animal}
                   onViewDetail={handleViewDetail}
                   onAdopt={handleAdoption}
+                  isLoading={isSubmittingAdoption}
                 />
               ))}
             </div>
@@ -215,101 +261,6 @@ export const Animal: React.FC = () => {
           />
         </div>
       </section>
-    </div>
-  );
-};
-
-// Create a custom card component for public view
-interface PublicAnimalCardProps {
-  animal: AnimalResponse;
-  onViewDetail: (animal: AnimalResponse) => void;
-  onAdopt: (animal: AnimalResponse) => void;
-}
-
-const PublicAnimalCard: React.FC<PublicAnimalCardProps> = ({
-  animal,
-  onViewDetail,
-  onAdopt
-}) => {
-  return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border border-gray-200 flex flex-col h-full">
-      <div className="aspect-w-16 aspect-h-9 bg-gray-200 flex-shrink-0">
-        <img
-          src={animal.imgUrl}
-          alt={animal.name}
-          className="w-full h-48 object-cover"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=No+Image';
-          }}
-        />
-      </div>
-
-      <div className="p-4 flex flex-col flex-1">
-        <div className="flex items-start justify-between mb-2">
-          <h3 className="text-lg font-semibold text-gray-900 flex-1">
-            {animal.name}
-          </h3>
-          <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            Available
-          </span>
-        </div>
-
-        <div className="space-y-2 mb-4 flex-1">
-          <div className="flex items-center text-sm text-gray-500 space-x-4">
-            <div className="flex items-center">
-              <PawPrint className="h-4 w-4 mr-1" />
-              <span>{animal.breed}</span>
-            </div>
-            <div className="flex items-center">
-              <Heart className="h-4 w-4 mr-1" />
-              <span>{animal.age} years old</span>
-            </div>
-          </div>
-
-          <div className="flex items-center text-sm text-gray-500">
-            <span className="font-medium">{animal.gender}</span>
-            {animal.categoryAnimals && (
-              <>
-                <span className="mx-2">•</span>
-                <span>{animal.categoryAnimals.categoryName}</span>
-              </>
-            )}
-          </div>
-
-          {animal.shelter && (
-            <div className="flex items-center text-sm text-gray-500">
-              <span className="font-medium">Shelter:</span>
-              <span className="ml-1">{animal.shelter.shelterName}</span>
-            </div>
-          )}
-
-          <p className="text-sm text-gray-600 line-clamp-2 mt-2">
-            {animal.description}
-          </p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex space-x-2 mt-auto">
-          <Button
-            onClick={() => onViewDetail(animal)}
-            variant="outline"
-            size="sm"
-            className="flex-1 flex items-center justify-center"
-          >
-            <Eye className="h-4 w-4 mr-1" />
-            View Details
-          </Button>
-
-          <Button
-            onClick={() => onAdopt(animal)}
-            size="sm"
-            className="flex-1 flex items-center justify-center bg-orange-600 hover:bg-orange-700 text-white"
-          >
-            <Heart className="h-4 w-4 mr-1" />
-            Adopt
-          </Button>
-        </div>
-      </div>
     </div>
   );
 };

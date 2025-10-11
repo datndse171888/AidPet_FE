@@ -15,8 +15,12 @@ export const animalApi = {
         return api.put<AnimalResponse>(`/animals/updateStatus/${id}`, animalUpdateStatusRequest);
     },
 
-    getByShelter: (id: string, size: number, page: number) => {
-        return api.post<DataResponse<AnimalResponse>>(`/animals/shelter?size=${size}&page=${page}`, id); 
+    getByStatus: () => {
+        return api.get<DataResponse<AnimalResponse>>(`/animals/status?page=0&size=100`); 
+    },
+
+    getByShelter: (id: string) => {
+        return api.post<DataResponse<AnimalResponse>>(`/animals/shelter?page=0&size=100`, {shelterUuid: id}); 
     },
 
     getAllAvailable: (size: number, page: number) => {

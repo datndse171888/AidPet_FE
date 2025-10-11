@@ -20,3 +20,15 @@ export interface OrderDetail {
     quantity: number;
     sub_total: number;
 }
+
+export interface OrderRequest {
+    userId: string;
+    shippingAddress: string;
+    paymentMethod: string;
+    orderDetails: OrderDetailItem[];
+}
+
+interface OrderDetailItem {
+    productId: string;
+    quantity: number;
+}

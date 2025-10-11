@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Heart, Clock } from 'lucide-react';
-import { Animal, AnimalResponse, AnimalUpdateStatusRequest } from '../../types/Animal';
+import { AnimalResponse, AnimalUpdateStatusRequest } from '../../types/Animal';
 import { AdminAnimalCard } from '../../components/ui/card/AdminAnimalCard';
 import { AnimalDetailModal } from '../../components/ui/modal/AnimalDetailModal';
 import { animalApi } from '../../services/api/AnimalApi';
@@ -9,7 +9,7 @@ export const AnimalManager: React.FC = () => {
   const [animals, setAnimals] = useState<AnimalResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
+  const [selectedAnimal, setSelectedAnimal] = useState<AnimalResponse | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   // Mock data - replace with actual API call
@@ -24,8 +24,9 @@ export const AnimalManager: React.FC = () => {
   const getPendingAnimals = async () => {
     try {
       // Replace with actual API call
-      const response = await animalApi.getByStatus(100, 0);
-      setAnimals(response.data);
+      const response = await animalApi.getByStatus();
+      const data = response.data;
+      setAnimals(data.listData);
     } catch (error) {
       console.error('Failed to fetch animals:', error);
     }
@@ -39,7 +40,7 @@ export const AnimalManager: React.FC = () => {
     return matchesSearch;
   });
 
-  const handleViewDetail = (animal: Animal) => {
+  const handleViewDetail = (animal: AnimalResponse) => {
     setSelectedAnimal(animal);
     setShowDetailModal(true);
   };
