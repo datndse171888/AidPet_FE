@@ -2,15 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { 
   Users, 
   FileText, 
-  TrendingUp, 
-  Heart, 
-  Calendar,
-  CheckCircle,
+  TrendingUp,
   Clock,
-  AlertCircle,
   Activity,
   BarChart3
 } from 'lucide-react';
+import { adminDashboardApi } from '../../services/api/AdminDashboardApi';
 
 export const Dashboard: React.FC = () => {
   const [stats, setStats] = useState({
@@ -22,54 +19,69 @@ export const Dashboard: React.FC = () => {
     activeToday: 0
   });
 
-  const [recentActivity, setRecentActivity] = useState([
-    {
-      id: 1,
-      type: 'post_submitted',
-      message: 'New post submitted by Shelter123',
-      time: '2 minutes ago',
-      icon: FileText,
-      color: 'text-blue-600'
-    },
-    {
-      id: 2,
-      type: 'user_registered',
-      message: 'New user registered: john.doe@email.com',
-      time: '15 minutes ago',
-      icon: Users,
-      color: 'text-green-600'
-    },
-    {
-      id: 3,
-      type: 'post_approved',
-      message: 'Post "Help Save Abandoned Puppies" approved',
-      time: '1 hour ago',
-      icon: CheckCircle,
-      color: 'text-orange-600'
-    },
-    {
-      id: 4,
-      type: 'system_alert',
-      message: 'System backup completed successfully',
-      time: '2 hours ago',
-      icon: Activity,
-      color: 'text-purple-600'
-    }
-  ]);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [systemHealth, setSystemHealth] = useState({
+    databaseStatus: 'healthy',
+    serverPerformance: 'optimal',
+    storageUsage: 78,
+    apiResponseTime: 120
+  });
+  const [todaySummary, setTodaySummary] = useState({
+    activeUsers: 0,
+    newPosts: 0,
+    postsApproved: 0,
+    pageViews: 0
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock API call - replace with actual API
+  // Fetch dashboard data from API with automatic fallback
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setStats({
-        totalUsers: 1247,
-        totalPosts: 89,
-        pendingPosts: 12,
-        approvedPosts: 77,
-        totalViews: 15420,
-        activeToday: 156
-      });
-    }, 1000);
+    const fetchDashboardData = async () => {
+      setIsLoading(true);
+      try {
+        // Use API service with automatic fallback to mock data
+                const [statsData, activityData, healthData, summaryData] = await Promise.all([
+                  adminDashboardApi.getDashboardStats(),
+                  adminDashboardApi.getRecentActivity(10),
+                  adminDashboardApi.getSystemHealth(),
+                  adminDashboardApi.getTodaySummary()
+                ]);
+
+                setStats(statsData.data);
+                setRecentActivity(activityData.data);
+                setSystemHealth(healthData.data);
+                setTodaySummary(summaryData.data);
+
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error);
+        // Set default values if everything fails
+        setStats({
+          totalUsers: 0,
+          totalPosts: 0,
+          pendingPosts: 0,
+          approvedPosts: 0,
+          totalViews: 0,
+          activeToday: 0
+        });
+        setRecentActivity([]);
+        setSystemHealth({
+          databaseStatus: 'error',
+          serverPerformance: 'slow',
+          storageUsage: 0,
+          apiResponseTime: 0
+        });
+        setTodaySummary({
+          activeUsers: 0,
+          newPosts: 0,
+          postsApproved: 0,
+          pageViews: 0
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
   const statCards = [
@@ -137,6 +149,23 @@ export const Dashboard: React.FC = () => {
       action: () => console.log('Analytics')
     }
   ];
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-1">
+            Loading dashboard data...
+          </p>
+        </div>
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+          <span className="ml-3 text-gray-600">Loading dashboard...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -213,34 +242,68 @@ export const Dashboard: React.FC = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <div className={`w-3 h-3 rounded-full ${
+                    systemHealth.databaseStatus === 'healthy' ? 'bg-green-500' : 
+                    systemHealth.databaseStatus === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}></div>
                   <span className="text-gray-700">Database Status</span>
                 </div>
-                <span className="text-green-600 text-sm font-medium">Healthy</span>
+                <span className={`text-sm font-medium ${
+                  systemHealth.databaseStatus === 'healthy' ? 'text-green-600' : 
+                  systemHealth.databaseStatus === 'warning' ? 'text-yellow-600' : 'text-red-600'
+                }`}>
+                  {systemHealth.databaseStatus === 'healthy' ? 'Healthy' : 
+                   systemHealth.databaseStatus === 'warning' ? 'Warning' : 'Error'}
+                </span>
               </div>
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <div className={`w-3 h-3 rounded-full ${
+                    systemHealth.serverPerformance === 'optimal' ? 'bg-green-500' : 
+                    systemHealth.serverPerformance === 'good' ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}></div>
                   <span className="text-gray-700">Server Performance</span>
                 </div>
-                <span className="text-green-600 text-sm font-medium">Optimal</span>
+                <span className={`text-sm font-medium ${
+                  systemHealth.serverPerformance === 'optimal' ? 'text-green-600' : 
+                  systemHealth.serverPerformance === 'good' ? 'text-yellow-600' : 'text-red-600'
+                }`}>
+                  {systemHealth.serverPerformance === 'optimal' ? 'Optimal' : 
+                   systemHealth.serverPerformance === 'good' ? 'Good' : 'Slow'}
+                </span>
               </div>
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <div className={`w-3 h-3 rounded-full ${
+                    systemHealth.storageUsage < 80 ? 'bg-green-500' : 
+                    systemHealth.storageUsage < 90 ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}></div>
                   <span className="text-gray-700">Storage Usage</span>
                 </div>
-                <span className="text-yellow-600 text-sm font-medium">78% Used</span>
+                <span className={`text-sm font-medium ${
+                  systemHealth.storageUsage < 80 ? 'text-green-600' : 
+                  systemHealth.storageUsage < 90 ? 'text-yellow-600' : 'text-red-600'
+                }`}>
+                  {systemHealth.storageUsage}% Used
+                </span>
               </div>
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <div className={`w-3 h-3 rounded-full ${
+                    systemHealth.apiResponseTime < 200 ? 'bg-green-500' : 
+                    systemHealth.apiResponseTime < 500 ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}></div>
                   <span className="text-gray-700">API Response Time</span>
                 </div>
-                <span className="text-green-600 text-sm font-medium">120ms</span>
+                <span className={`text-sm font-medium ${
+                  systemHealth.apiResponseTime < 200 ? 'text-green-600' : 
+                  systemHealth.apiResponseTime < 500 ? 'text-yellow-600' : 'text-red-600'
+                }`}>
+                  {systemHealth.apiResponseTime}ms
+                </span>
               </div>
             </div>
           </div>
@@ -278,19 +341,19 @@ export const Dashboard: React.FC = () => {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-orange-100">Active Users</span>
-                <span className="font-semibold">{stats.activeToday}</span>
+                <span className="font-semibold">{todaySummary.activeUsers}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-orange-100">New Posts</span>
-                <span className="font-semibold">8</span>
+                <span className="font-semibold">{todaySummary.newPosts}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-orange-100">Posts Approved</span>
-                <span className="font-semibold">5</span>
+                <span className="font-semibold">{todaySummary.postsApproved}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-orange-100">Page Views</span>
-                <span className="font-semibold">2,847</span>
+                <span className="font-semibold">{todaySummary.pageViews.toLocaleString()}</span>
               </div>
             </div>
           </div>

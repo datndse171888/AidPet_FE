@@ -113,7 +113,7 @@ export const Login: React.FC = () => {
               type="text"
               value={formData.userName}
               onChange={handleChange}
-              error={errors.email}
+              error={errors.userName}
               icon={<CircleUserRound className="h-5 w-5 text-gray-400" />}
               required
             />

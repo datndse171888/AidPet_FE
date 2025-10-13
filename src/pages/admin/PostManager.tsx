@@ -3,6 +3,8 @@ import { Search, Filter, FileText, TrendingUp, Clock, CheckCircle } from 'lucide
 import { Post } from '../../types/Post';
 import { AdminPostCard } from '../../components/ui/card/AdminPostCard';
 import { PostDetailModal } from '../../components/ui/modal/PostDetailModal';
+import { PostApprovalModal } from '../../components/ui/modal/PostApprovalModal';
+import { adminPostApi } from '../../services/api/AdminPostApi';
 
 export const PostManager: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -11,77 +13,28 @@ export const PostManager: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [approvalAction, setApprovalAction] = useState<'approve' | 'reject'>('approve');
+  const [approvalPostId, setApprovalPostId] = useState<string>('');
+  const [approvalLoading, setApprovalLoading] = useState(false);
 
-  // Mock data - replace with actual API call
+  // Fetch posts from API with automatic fallback
   useEffect(() => {
-    setIsLoading(true);
-
-    // Simulate API call
-    // const response = await postApi.getAllPosts();
-    // setPosts(response.data);
-
-    const mockPosts: Post[] = [
-      {
-        id: '1',
-        topic: 'Help Us Save Abandoned Puppies - Urgent Medical Care Needed',
-        htmlContent: '<p>We recently rescued several abandoned puppies who need urgent medical care and loving homes. These adorable little ones were found in poor condition but are now receiving the care they need at our shelter.</p>',
-        deltaContent: '{"ops":[{"insert":"We recently rescued several abandoned puppies..."}]}',
-        categoryBlog: { id: '1', name: 'Rescue Stories' },
-        thumbnail: 'https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=400',
-        view: 245,
-        stamp: '2024-01-15T10:00:00Z',
-        author_id: 'shelter123',
-      },
-      {
-        id: '2',
-        topic: 'Cat Adoption Event This Weekend',
-        htmlContent: '<p>Join us this weekend for our special cat adoption event! We have many beautiful cats looking for their forever homes. All cats are vaccinated and spayed/neutered.</p>',
-        deltaContent: '{"ops":[{"insert":"Join us this weekend for our special cat adoption event..."}]}',
-        categoryBlog: { id: '2', name: 'Adoption Events' },
-        thumbnail: 'https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg?auto=compress&cs=tinysrgb&w=400',
-        view: 189,
-        stamp: '2024-01-10T14:30:00Z',
-        author_id: 'shelter456',
-      },
-      {
-        id: '3',
-        topic: 'New Volunteer Training Program Starting Next Month',
-        htmlContent: '<p>We are starting a new volunteer training program next month. Learn how to properly care for animals and help us make a difference in their lives.</p>',
-        deltaContent: '{"ops":[{"insert":"We are starting a new volunteer training program..."}]}',
-        categoryBlog: { id: '3', name: 'Volunteer Programs' },
-        thumbnail: 'https://images.pexels.com/photos/1851164/pexels-photo-1851164.jpeg?auto=compress&cs=tinysrgb&w=400',
-        view: 0, // Pending approval
-        stamp: '2024-01-08T09:15:00Z',
-        author_id: 'shelter789',
-      },
-      {
-        id: '4',
-        topic: 'Pet Health Tips for Winter Season',
-        htmlContent: '<p>Winter is coming and it\'s important to keep your pets healthy during the cold season. Here are some essential tips to help your furry friends stay warm and comfortable.</p>',
-        deltaContent: '{"ops":[{"insert":"Winter is coming and it\'s important to keep your pets healthy..."}]}',
-        categoryBlog: { id: '4', name: 'Health Tips' },
-        thumbnail: 'https://images.pexels.com/photos/551628/pexels-photo-551628.jpeg?auto=compress&cs=tinysrgb&w=400',
-        view: 0, // Pending approval
-        stamp: '2024-01-05T16:45:00Z',
-        author_id: 'shelter123',
-      },
-      {
-        id: '5',
-        topic: 'Success Story: Max Finds His Forever Home',
-        htmlContent: '<p>We are thrilled to share the heartwarming story of Max, a German Shepherd who found his perfect family after months of waiting. This is what makes our work so rewarding!</p>',
-        deltaContent: '{"ops":[{"insert":"We are thrilled to share the heartwarming story of Max..."}]}',
-        categoryBlog: { id: '5', name: 'Success Stories' },
-        thumbnail: 'https://images.pexels.com/photos/333083/pexels-photo-333083.jpeg?auto=compress&cs=tinysrgb&w=400',
-        view: 428,
-        stamp: '2024-01-03T11:20:00Z',
-        author_id: 'shelter456',
+    const fetchPosts = async () => {
+      setIsLoading(true);
+      try {
+        // Use API service with automatic fallback to mock data
+                const response = await adminPostApi.getAllPosts(0, 100);
+                setPosts(response.data.listData || []);
+      } catch (error) {
+        console.error('Failed to fetch posts:', error);
+        setPosts([]);
+      } finally {
+        setIsLoading(false);
       }
-    ];
+    };
 
-    setTimeout(() => {
-      setPosts(mockPosts);
-      setIsLoading(false);
-    }, 1000);
+    fetchPosts();
   }, []);
 
   const filteredPosts = posts.filter(post => {
@@ -106,30 +59,47 @@ export const PostManager: React.FC = () => {
     setSelectedPost(null);
   };
 
-  const handleApprove = async (postId: string) => {
-    if (window.confirm('Are you sure you want to approve this post?')) {
-      // Simulate API call
-      // await postApi.approvePost(postId);
+  const handleApprove = (postId: string) => {
+    setApprovalAction('approve');
+    setApprovalPostId(postId);
+    setShowApprovalModal(true);
+  };
 
-      setPosts(prev => prev.map(post =>
-        post.id === postId
-          ? { ...post, view: 1 } // Mock approval by setting view > 0
-          : post
-      ));
+  const handleReject = (postId: string) => {
+    setApprovalAction('reject');
+    setApprovalPostId(postId);
+    setShowApprovalModal(true);
+  };
 
-      console.log('Approved post:', postId);
+  const handleApprovalConfirm = async (message: string) => {
+    setApprovalLoading(true);
+    
+    try {
+            if (approvalAction === 'approve') {
+              await adminPostApi.approvePost(approvalPostId, message);
+              setPosts(prev => prev.map(post =>
+                post.id === approvalPostId
+                  ? { ...post, view: 1 } // Mock approval by setting view > 0
+                  : post
+              ));
+            } else {
+              await adminPostApi.rejectPost(approvalPostId, message);
+              setPosts(prev => prev.filter(post => post.id !== approvalPostId));
+            }
+      
+      setShowApprovalModal(false);
+      setApprovalPostId('');
+    } catch (error) {
+      console.error(`Failed to ${approvalAction} post:`, error);
+      // Handle error - show toast notification
+    } finally {
+      setApprovalLoading(false);
     }
   };
 
-  const handleReject = async (postId: string) => {
-    if (window.confirm('Are you sure you want to reject this post? This action cannot be undone.')) {
-      // Simulate API call
-      // await postApi.rejectPost(postId);
-
-      setPosts(prev => prev.filter(post => post.id !== postId));
-
-      console.log('Rejected post:', postId);
-    }
+  const handleCloseApprovalModal = () => {
+    setShowApprovalModal(false);
+    setApprovalPostId('');
   };
 
   const stats = {
@@ -217,6 +187,7 @@ export const PostManager: React.FC = () => {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as 'all' | 'approved' | 'pending')}
                 className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                aria-label="Filter posts by status"
               >
                 <option value="all">All Status</option>
                 <option value="approved">Approved</option>
@@ -271,6 +242,16 @@ export const PostManager: React.FC = () => {
         onApprove={handleApprove}
         onReject={handleReject}
         showActions={true}
+      />
+
+      {/* Post Approval Modal */}
+      <PostApprovalModal
+        isOpen={showApprovalModal}
+        onClose={handleCloseApprovalModal}
+        onConfirm={handleApprovalConfirm}
+        action={approvalAction}
+        postTitle={posts.find(p => p.id === approvalPostId)?.topic || ''}
+        isLoading={approvalLoading}
       />
     </div>
   );
