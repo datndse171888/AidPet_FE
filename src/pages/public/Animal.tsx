@@ -13,6 +13,11 @@ import { CategoryAnimalResponse } from '../../types/Category';
 import { categoryApi } from '../../services/api/CategoryApi';
 
 export const Animal: React.FC = () => {
+
+  //=====================
+  // States
+  //=====================
+
   const [animals, setAnimals] = useState<AnimalResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -27,6 +32,10 @@ export const Animal: React.FC = () => {
 
   // Categories for filter
   const [categories, setCategories] = useState<CategoryAnimalResponse[]>([]);
+
+  //=====================
+  // Effects
+  //=====================
 
   useEffect(() => {
     getAllAvailableAnimals();
@@ -60,6 +69,10 @@ export const Animal: React.FC = () => {
     }
   };
 
+  //=====================
+  // Filter
+  //=====================
+
   const filteredAnimals = animals.filter(animal => {
     const matchesSearch = animal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       animal.breed.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -71,6 +84,10 @@ export const Animal: React.FC = () => {
 
     return matchesSearch && matchesCategory;
   });
+
+  //=====================
+  // Handlers
+  //=====================
 
   const handleViewDetail = (animal: AnimalResponse) => {
     setSelectedAnimal(animal);
@@ -114,6 +131,7 @@ export const Animal: React.FC = () => {
     } catch (error) {
       console.error('Failed to submit adoption request:', error);
     } finally {
+      getAllAvailableAnimals();
       setIsSubmittingAdoption(false);
     }
   };

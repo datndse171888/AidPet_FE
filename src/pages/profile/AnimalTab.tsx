@@ -20,41 +20,77 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
   onEditAnimal,
   onDeleteAnimal
 }) => {
+
+  //==========================
+  // States
+  //==========================
+
   const [animals, setAnimals] = useState<AnimalResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'AVAILABLE' | 'ADOPTED' | 'RESCUED' | 'PENDING'>('all');
   const [isLoading, setIsLoading] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  const shelter: ShelterResponse = JSON.parse(localStorage.getItem('shelter') || '{}');
-  const shelterId = shelter.shelterUuid;
+  const shelterString = localStorage.getItem('shelter');
+  const shelter: ShelterResponse | null = shelterString ? JSON.parse(shelterString) : null;
+  const shelterId = shelter?.shelterUuid;
 
   // Modal states
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedAnimal, setSelectedAnimal] = useState<AnimalResponse | null>(null);
 
-  // Mock data - replace with actual API call
-  useEffect(() => {
-    setIsLoading(true);
-    getAnimalByShelter();
-    setIsLoading(false);
-  }, []);
+  //==========================
+  // Effects
+  //==========================
 
+  useEffect(() => {
+    if (shelterId) {
+      getAnimalByShelter();
+    }
+  }, [shelterId]);
+
+  //==========================
+  // Handlers
+  //==========================
+
+  if (!shelterId) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-red-500 mb-4">
+          Shelter information not found. Please login again.
+        </div>
+      </div>
+    );
+  }
+
+  // Fetch animals by shelter ID
   const getAnimalByShelter = async () => {
+    if (!shelterId) {
+      console.error('Shelter ID is missing');
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
       const response = await animalApi.getByShelter(shelterId);
       const data: DataResponse<AnimalResponse> = response.data;
+
       if (data && data.listData && Array.isArray(data.listData)) {
         setAnimals(data.listData);
       } else {
         setAnimals([]); // Fallback to empty array
       }
+
     } catch (error) {
       console.error('Failed to fetch animals:', error);
-      setAnimals([]); 
+      setAnimals([]);
+    } finally {
+      setIsLoading(false);
     }
   }
 
+  // Filtered animals based on search and status filter
   const filteredAnimals = (animals || []).filter(animal => {
     if (!animal) return false;
     // Null checks để tránh lỗi
@@ -71,6 +107,7 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
     return matchesSearch && matchesStatus;
   });
 
+  // Handlers for modal actions
   const handleViewDetail = (animal: AnimalResponse) => {
     setSelectedAnimal(animal);
     setShowDetailModal(true);
@@ -101,6 +138,7 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
     setSelectedAnimal(null);
   };
 
+  // Save changes made in the modal
   const handleSaveAnimal = async (animalData: AnimalRequest) => {
     try {
       // Simulate API call
@@ -117,16 +155,22 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
     setShowCreateForm(true);
   };
 
-
   const handleCancelCreate = () => {
     setShowCreateForm(false);
   };
+
+  const handleAnimalCreated = async () => {
+    setShowCreateForm(false);
+    await getAnimalByShelter();
+  };
+
 
   // Nếu đang ở chế độ tạo animal, hiển thị form tạo animal
   if (showCreateForm) {
     return (
       <CreateAnimalForm
         onCancel={handleCancelCreate}
+        onAnimalCreated={handleAnimalCreated}
       />
     );
   }
@@ -230,7 +274,7 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
               console.warn('Invalid animal data:', animal);
               return null;
             }
-            
+
             return (
               <AnimalCard
                 key={animal.animalUuid} // This should be unique

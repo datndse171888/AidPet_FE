@@ -6,31 +6,45 @@ import { AnimalDetailModal } from '../../components/ui/modal/AnimalDetailModal';
 import { animalApi } from '../../services/api/AnimalApi';
 
 export const AnimalManager: React.FC = () => {
+
+  //========================
+  // States
+  //========================
+
   const [animals, setAnimals] = useState<AnimalResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedAnimal, setSelectedAnimal] = useState<AnimalResponse | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  // Mock data - replace with actual API call
+  //========================
+  // Effects
+  //========================
+
   useEffect(() => {
-    setIsLoading(true);
 
     getPendingAnimals();
 
-    setIsLoading(false);
   }, []);
 
   const getPendingAnimals = async () => {
+    setIsLoading(true);
     try {
       // Replace with actual API call
       const response = await animalApi.getByStatus();
       const data = response.data;
-      setAnimals(data.listData);
+      setAnimals(data.listData || []);
     } catch (error) {
       console.error('Failed to fetch animals:', error);
+      setAnimals([]);
+    } finally {
+      setIsLoading(false);
     }
   }
+
+  //========================
+  // Handlers
+  //========================
 
   const filteredAnimals = animals.filter(animal => {
     const matchesSearch = animal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -50,6 +64,7 @@ export const AnimalManager: React.FC = () => {
     setSelectedAnimal(null);
   };
 
+  // Approve animal for adoption
   const handleApprove = async (animalId: string) => {
     if (window.confirm('Are you sure you want to approve this animal for adoption?')) {
       try {
@@ -57,6 +72,9 @@ export const AnimalManager: React.FC = () => {
         const data: AnimalUpdateStatusRequest = { status: 'AVAILABLE', message: 'Approved by admin' };
         const response = await animalApi.updateStatus(animalId, data);
         const updatedAnimal: AnimalResponse = response.data;
+
+        await getPendingAnimals(); // Refresh the list after approval
+
         console.table(updatedAnimal);
       } catch (error) {
         console.error('Failed to approve animal:', error);
@@ -73,6 +91,9 @@ export const AnimalManager: React.FC = () => {
         const data: AnimalUpdateStatusRequest = { status: 'REJECT', message: 'Rejected by admin' };
         const response = await animalApi.updateStatus(animalId, data);
         const updatedAnimal: AnimalResponse = response.data;
+
+        await getPendingAnimals(); // Refresh the list after rejection
+
         console.table(updatedAnimal);
       } catch (error) {
         console.error('Failed to approve animal:', error);
@@ -80,6 +101,10 @@ export const AnimalManager: React.FC = () => {
       } console.log('Rejected animal:', animalId);
     }
   };
+
+  //========================
+  // Render
+  //========================
 
   return (
     <div className="space-y-6">

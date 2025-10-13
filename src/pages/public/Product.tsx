@@ -1,36 +1,63 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, Filter, Trash2, Plus, Minus, ShoppingCart, Package } from 'lucide-react';
-import { ProductDetail, ProductDetailResponse } from '../../types/Product';
-import { ProductDetailCard } from '../../components/ui/card/ProductDetailCard';
+import { ProductResponse } from '../../types/Product';
+import { ProductCard } from '../../components/ui/card/ProductCard';
+import { CheckoutModal } from '../../components/ui/modal/CheckoutModal';
 import { Button } from '../../components/ui/Button';
 import { productApi } from '../../services/api/ProductApi';
-import { DataResponse } from '../../types/DataResponse';
-
-// Cart item interface for products
-interface ProductCartItem {
-  product: ProductDetailResponse;
-  quantity: number;
-}
+import { OrderDetailItem, OrderRequest, OrderResponse } from '../../types/Order';
+import { useAuth } from '../../hooks/AuthorizationRoute';
+import { navigationService } from '../../utils/NavigationService';
+import { orderApi } from '../../services/api/OrderApi';
 
 export const Product: React.FC = () => {
-  const [products, setProducts] = useState<ProductDetailResponse[]>([]);
-  const [cartItems, setCartItems] = useState<ProductCartItem[]>([]);
+
+  //=========================
+  // State variables
+  //=========================
+
+  const [products, setProducts] = useState<ProductResponse[]>([]);
+  const [cartItems, setCartItems] = useState<OrderDetailItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>('');
   const [showFilters, setShowFilters] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
 
+  const user = useAuth();
+
+  //=========================
   // Fetch products on component mount
+  //=========================
+
   useEffect(() => {
     fetchProducts();
+    // Load cart from localStorage on mount
+    const savedCart = localStorage.getItem('productCart');
+    if (savedCart) {
+      try {
+        setCartItems(JSON.parse(savedCart));
+      } catch (error) {
+        console.error('Failed to parse saved cart:', error);
+      }
+    }
   }, []);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('productCart', JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  //=========================
+  // Fetch products from API
+  //=========================
 
   const fetchProducts = async () => {
     setIsLoading(true);
     try {
-      const response = await productApi.getAllProductDetails();
+      const response = await productApi.getAllProducts();
       if (response.status === 200) {
         setProducts(response.data.listData);
       }
@@ -41,10 +68,21 @@ export const Product: React.FC = () => {
     }
   };
 
-  // Filter products based on search and filters
+  //=========================
+  // Helper function to get product by ID
+  //=========================
+
+  const getProductById = (productId: string): ProductResponse | undefined => {
+    return products.find(p => p.productId === productId);
+  };
+
+  //=========================
+  // Filter functionality
+  //=========================
+
   const filteredProducts = useMemo(() => {
     return products.filter(product => {
-      const matchesSearch = product.variantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      const matchesSearch = product.variant_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.color.toLowerCase().includes(searchQuery.toLowerCase());
 
@@ -58,9 +96,8 @@ export const Product: React.FC = () => {
 
       return matchesSearch && matchesColor && matchesPriceRange;
     });
-  }, [products, searchQuery, selectedCategory, selectedColor, selectedPriceRange]);
+  }, [products, searchQuery, selectedColor, selectedPriceRange]);
 
-  // Get unique values for filters
   const colors = [...new Set(products.map(p => p.color).filter(Boolean))];
   const priceRanges = [
     { value: '0-50', label: '$0 - $50' },
@@ -69,26 +106,29 @@ export const Product: React.FC = () => {
     { value: '201+', label: '$201+' }
   ];
 
+  //=========================
   // Cart functionality
+  //=========================
+
   const handleAddToCart = (productDetailId: string) => {
-    const product = products.find(p => p.detailId === productDetailId);
+    const product = getProductById(productDetailId);
     if (!product) return;
 
-    const existingItem = cartItems.find(item => item.product.detailId === productDetailId);
+    const existingItem = cartItems.find(item => item.productId === productDetailId);
 
     if (existingItem) {
       setCartItems(cartItems.map(item =>
-        item.product.detailId === productDetailId
+        item.productId === productDetailId
           ? { ...item, quantity: item.quantity + 1 }
           : item
       ));
     } else {
-      setCartItems([...cartItems, { product, quantity: 1 }]);
+      setCartItems([...cartItems, { productId: productDetailId, quantity: 1 }]);
     }
   };
 
   const handleRemoveFromCart = (productDetailId: string) => {
-    setCartItems(cartItems.filter(item => item.product.detailId !== productDetailId));
+    setCartItems(cartItems.filter(item => item.productId !== productDetailId));
   };
 
   const handleUpdateQuantity = (productDetailId: string, quantity: number) => {
@@ -98,7 +138,7 @@ export const Product: React.FC = () => {
     }
 
     setCartItems(cartItems.map(item =>
-      item.product.detailId === productDetailId
+      item.productId === productDetailId
         ? { ...item, quantity }
         : item
     ));
@@ -106,19 +146,86 @@ export const Product: React.FC = () => {
 
   const handleClearCart = () => {
     setCartItems([]);
+    localStorage.removeItem('productCart');
   };
+
+  //=========================
+  // Clear functionality
+  //=========================
 
   const clearFilters = () => {
     setSearchQuery('');
-    setSelectedCategory('');
     setSelectedColor('');
     setSelectedPriceRange('');
   };
 
-  // Calculate cart totals
-  const totalPrice = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+  //=========================
+  // Checkout functionality
+  //=========================
+
+  const handleCheckout = () => {
+    if (!user?.isAuthenticated) {
+      alert('Please login to checkout');
+      navigationService.goTo('/login');
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      alert('Your cart is empty');
+      return;
+    }
+
+    setShowCheckoutModal(true);
+  };
+
+  const handleSubmitOrder = async (orderData: OrderRequest) => {
+    setIsSubmittingOrder(true);
+    
+    try {
+      // Here you would call your order API
+      console.log('Submitting order:', orderData);
+      
+      // Simulate API call
+      const response = await orderApi.createOrder(orderData);
+      if (response.status !== 200) {
+        console.error('Order submission failed:', response.data);
+      } else {
+        const data: OrderResponse = response.data;
+        console.log('Order submitted successfully:', data);
+      }
+      
+      // Clear cart after successful order
+      handleClearCart();
+      setShowCheckoutModal(false);
+      
+      alert('Order placed successfully! You will receive a confirmation email shortly.');
+      
+      // Navigate to orders page or profile
+      navigationService.goTo('/profile?tab=orders');
+      
+    } catch (error) {
+      console.error('Failed to submit order:', error);
+      alert('Failed to place order. Please try again.');
+    } finally {
+      setIsSubmittingOrder(false);
+    }
+  };
+
+  //=========================
+  // Calculate totals
+  //=========================
+
+  const totalPrice = cartItems.reduce((sum, item) => {
+    const product = getProductById(item.productId);
+    return sum + (product ? product.price * item.quantity : 0);
+  }, 0);
+  
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
+  //=========================
+  // Render component
+  //=========================
+  
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -157,6 +264,7 @@ export const Product: React.FC = () => {
                 </div>
                 <Button
                   className="w-full mb-2 bg-orange-600 hover:bg-orange-700"
+                  onClick={handleCheckout}
                   disabled={cartItems.length === 0}
                 >
                   <ShoppingCart className="h-4 w-4 mr-2" />
@@ -201,7 +309,6 @@ export const Product: React.FC = () => {
                 </div>
 
                 <div className={`space-y-4 ${showFilters || 'hidden lg:block'}`}>
-
                   {/* Color Filter */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -257,52 +364,76 @@ export const Product: React.FC = () => {
               </p>
             </div>
 
-            {/* Cart Items */}
+            {/* Cart Items Display */}
             {cartItems.length > 0 && (
               <div className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Cart</h2>
-                <div className="space-y-4">
-                  {cartItems.map(({ product, quantity }) => (
-                    <div key={product.detailId} className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-                      <div className="flex items-center space-x-4">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Cart ({totalItems} items)</h2>
+                <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 space-y-4">
+                  {cartItems.map((item) => {
+                    const product = getProductById(item.productId);
+                    
+                    if (!product) {
+                      return (
+                        <div key={item.productId} className="text-red-500 text-sm">
+                          Product not found (ID: {item.productId})
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={item.productId} className="flex items-center space-x-4 py-3 border-b border-gray-100 last:border-b-0">
                         <img
-                          src={product.imageUrl}
-                          alt={product.variantName}
+                          src={product.imgUrl || 'https://via.placeholder.com/64x64?text=No+Image'}
+                          alt={product.variant_name}
                           className="w-16 h-16 object-cover rounded-lg"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/64x64?text=No+Image';
-                          }}
                         />
                         <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">{product.variantName}</h3>
+                          <h3 className="font-semibold text-gray-900">{product.variant_name}</h3>
                           <p className="text-sm text-gray-600">SKU: {product.sku}</p>
-                          <p className="text-sm text-orange-600">${product.price.toFixed(2)}</p>
+                          <p className="text-sm text-gray-600">Color: {product.color}</p>
+                          <p className="text-sm text-orange-600">${product.price.toFixed(2)} each</p>
                         </div>
                         <div className="flex items-center space-x-2">
                           <button
-                            onClick={() => handleUpdateQuantity(product.detailId, quantity - 1)}
-                            className="p-1 rounded-md text-gray-500 hover:text-gray-700"
+                            onClick={() => handleUpdateQuantity(product.productId, item.quantity - 1)}
+                            className="p-1 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                           >
                             <Minus className="h-4 w-4" />
                           </button>
-                          <span className="w-8 text-center">{quantity}</span>
+                          <span className="w-8 text-center font-medium">{item.quantity}</span>
                           <button
-                            onClick={() => handleUpdateQuantity(product.detailId, quantity + 1)}
-                            className="p-1 rounded-md text-gray-500 hover:text-gray-700"
-                            disabled={quantity >= product.stockQuantity}
+                            onClick={() => handleUpdateQuantity(product.productId, item.quantity + 1)}
+                            className="p-1 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                            disabled={item.quantity >= product.stock_quantity}
                           >
                             <Plus className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => handleRemoveFromCart(product.detailId)}
-                            className="p-1 rounded-md text-red-500 hover:text-red-700"
+                            onClick={() => handleRemoveFromCart(product.productId)}
+                            className="p-1 rounded-md text-red-500 hover:text-red-700 hover:bg-red-50"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-gray-900">
+                            ${(product.price * item.quantity).toFixed(2)}
+                          </p>
+                          {product.stock_quantity < 10 && (
+                            <p className="text-xs text-yellow-600">
+                              Only {product.stock_quantity} left
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
+                  
+                  {/* Cart Total */}
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+                    <span className="text-lg font-semibold text-gray-900">Total:</span>
+                    <span className="text-lg font-bold text-orange-600">${totalPrice.toFixed(2)}</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -317,8 +448,8 @@ export const Product: React.FC = () => {
               /* Product Grid */
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProducts.map((product) => (
-                  <ProductDetailCard
-                    key={product.detailId}
+                  <ProductCard
+                    key={product.productId}
                     product={product}
                     onAddToCart={handleAddToCart}
                   />
@@ -329,13 +460,13 @@ export const Product: React.FC = () => {
               <div className="text-center py-16 bg-white rounded-lg shadow-md">
                 <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <div className="text-gray-500 text-lg mb-2">
-                  {searchQuery || selectedCategory || selectedColor || selectedPriceRange
+                  {searchQuery || selectedColor || selectedPriceRange
                     ? 'No products found matching your criteria'
                     : 'No products available right now'
                   }
                 </div>
                 <p className="text-gray-400 mb-4">
-                  {searchQuery || selectedCategory || selectedColor || selectedPriceRange
+                  {searchQuery || selectedColor || selectedPriceRange
                     ? 'Try adjusting your search or filter settings'
                     : 'Please check back later for new products'
                   }
@@ -348,6 +479,17 @@ export const Product: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Checkout Modal */}
+      <CheckoutModal
+        isOpen={showCheckoutModal}
+        onClose={() => setShowCheckoutModal(false)}
+        cartItems={cartItems}
+        products={products}
+        onSubmitOrder={handleSubmitOrder}
+        totalPrice={totalPrice}
+        isSubmitting={isSubmittingOrder}
+      />
     </div>
   );
 };
