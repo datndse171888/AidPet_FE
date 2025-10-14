@@ -10,9 +10,19 @@ import { categoryApi } from '../../services/api/CategoryApi';
 
 interface CreateAnimalFormProps {
     onCancel: () => void;
+    onAnimalCreated?: () => void;
 }
 
-export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onCancel }) => {
+export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ 
+    onCancel,
+    onAnimalCreated
+}) => {
+
+    //==========================
+    // States
+    //==========================
+    
+    // Lấy shelterUuid từ localStorage (giả sử user đã đăng nhập và thông tin shelter được lưu trong localStorage)
     const shelter = localStorage.getItem('shelter') || '';
     const shelterData = shelter ? JSON.parse(shelter) : null;
     const shelterUuid = shelterData ? shelterData.shelterUuid : '';
@@ -33,12 +43,15 @@ export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onCancel }) 
     const [imagePreview, setImagePreview] = useState<string>('');
     const [errors, setErrors] = useState<FormErrors>({});
     const [isLoading, setIsLoading] = useState(false);
-    const [isPreview, setIsPreview] = useState(false);
 
     const genderOptions = [
         { value: 'Male', label: 'Male' },
         { value: 'Female', label: 'Female' },
     ];
+
+    //==========================
+    // Fetch data
+    //==========================
 
     useEffect(() => {
         setIsLoading(true);
@@ -57,6 +70,9 @@ export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onCancel }) 
         }
     };
 
+    //==========================
+    // Handlers
+    //==========================
 
     const validate = (): boolean => {
         const newErrors: FormErrors = {};
@@ -110,6 +126,22 @@ export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onCancel }) 
         }
     };
 
+    const resetFormData = () => {
+        setFormData({
+            shelterUuid: shelterUuid,
+            categoryAnimalsUuid: '',
+            name: '',
+            age: 0,
+            breed: '',
+            gender: '',
+            description: '',
+            img_url: '',
+        });
+        setImageFile(null);
+        setImagePreview('');
+        setErrors({});
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -124,6 +156,15 @@ export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onCancel }) 
             console.table(formData);
             const response = await animalApi.create(formData);
             console.log('Animal created:', response.data);
+
+            resetFormData();
+
+            if (onAnimalCreated) {
+                onAnimalCreated();
+            }
+            
+            onCancel();
+
         } catch (error) {
             setErrors({ general: 'Failed to add animal. Please try again.' });
         } finally {
@@ -179,15 +220,6 @@ export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onCancel }) 
                         </p>
                     </div>
                 </div>
-                <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsPreview(!isPreview)}
-                    className="flex items-center"
-                >
-                    <Eye className="h-4 w-4 mr-2" />
-                    {isPreview ? 'Edit Mode' : 'Preview Mode'}
-                </Button>
             </div>
 
             <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -197,226 +229,161 @@ export const CreateAnimalForm: React.FC<CreateAnimalFormProps> = ({ onCancel }) 
                     </div>
                 )}
 
-                {isPreview ? (
-                    // Preview Mode
-                    <div className="space-y-6">
-                        <h3 className="text-xl font-semibold text-gray-900">Animal Preview</h3>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Input
+                            label="Animal Name"
+                            name="name"
+                            type="text"
+                            value={formData.name}
+                            onChange={handleChange}
+                            error={errors.name}
+                            icon={<PawPrint className="h-5 w-5 text-gray-400" />}
+                            placeholder="e.g., Max, Luna, Charlie..."
+                            required
+                        />
 
-                        {imagePreview && (
-                            <div className="relative aspect-w-16 aspect-h-9">
-                                <img
-                                    src={imagePreview}
-                                    alt="Animal preview"
-                                    className="w-full h-64 object-cover rounded-lg"
-                                />
-                                {/* Nút xóa ảnh trong preview mode */}
-                                <button
-                                    type="button"
-                                    onClick={handleRemoveImage}
-                                    className="absolute top-2 right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors duration-200 shadow-lg"
-                                    title="Remove image"
-                                >
-                                    <X className="h-4 w-4" />
-                                </button>
-                            </div>
-                        )}
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                                    {formData.name || 'Animal Name'}
-                                </h1>
-                                <div className="space-y-2">
-                                    <p><span className="font-medium">Breed:</span> {formData.breed || 'Not specified'}</p>
-                                    <p><span className="font-medium">Age:</span> {formData.age || 0} years old</p>
-                                    <p><span className="font-medium">Gender:</span> {formData.gender || 'Not specified'}</p>
-                                </div>
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-semibold mb-2">Description</h3>
-                                <p className="text-gray-700">
-                                    {formData.description || 'No description provided...'}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex space-x-4 pt-6 border-t">
-                            <Button
-                                onClick={() => setIsPreview(false)}
-                                variant="outline"
-                                className="flex-1"
-                            >
-                                Back to Edit
-                            </Button>
-                            <Button
-                                onClick={handleSubmit}
-                                className="flex-1"
-                                loading={isLoading}
-                                disabled={isLoading}
-                            >
-                                <Save className="h-4 w-4 mr-2" />
-                                Add Animal
-                            </Button>
-                        </div>
+                        <Input
+                            label="Breed"
+                            name="breed"
+                            type="text"
+                            value={formData.breed}
+                            onChange={handleChange}
+                            error={errors.breed}
+                            icon={<Tag className="h-5 w-5 text-gray-400" />}
+                            placeholder="e.g., Golden Retriever, Persian Cat..."
+                            required
+                        />
                     </div>
-                ) : (
-                    // Edit Mode
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <Input
-                                label="Animal Name"
-                                name="name"
-                                type="text"
-                                value={formData.name}
-                                onChange={handleChange}
-                                error={errors.name}
-                                icon={<PawPrint className="h-5 w-5 text-gray-400" />}
-                                placeholder="e.g., Max, Luna, Charlie..."
-                                required
-                            />
 
-                            <Input
-                                label="Breed"
-                                name="breed"
-                                type="text"
-                                value={formData.breed}
-                                onChange={handleChange}
-                                error={errors.breed}
-                                icon={<Tag className="h-5 w-5 text-gray-400" />}
-                                placeholder="e.g., Golden Retriever, Persian Cat..."
-                                required
-                            />
-                        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <Select
+                            label="Category"
+                            name="categoryAnimalsUuid"
+                            value={formData.categoryAnimalsUuid}
+                            onChange={handleChange}
+                            error={errors.categoryAnimalsUuid}
+                            options={[
+                                { value: '', label: 'Select category...' },
+                                ...categories.map(cat => ({ value: cat.categoryId, label: cat.categoryName }))
+                            ]}
+                            icon={<Tag className="h-5 w-5 text-gray-400" />}
+                        />
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <Select
-                                label="Category"
-                                name="categoryAnimalsUuid"
-                                value={formData.categoryAnimalsUuid}
-                                onChange={handleChange}
-                                error={errors.categoryAnimalsUuid}
-                                options={[
-                                    { value: '', label: 'Select category...' },
-                                    ...categories.map(cat => ({ value: cat.categoryId, label: cat.categoryName }))
-                                ]}
-                                icon={<Tag className="h-5 w-5 text-gray-400" />}
-                            />
+                        <Select
+                            label="Gender"
+                            name="gender"
+                            value={formData.gender}
+                            onChange={handleChange}
+                            error={errors.gender}
+                            options={[
+                                { value: '', label: 'Select gender...' },
+                                ...genderOptions
+                            ]}
+                            icon={<User className="h-5 w-5 text-gray-400" />}
+                        />
 
-                            <Select
-                                label="Gender"
-                                name="gender"
-                                value={formData.gender}
-                                onChange={handleChange}
-                                error={errors.gender}
-                                options={[
-                                    { value: '', label: 'Select gender...' },
-                                    ...genderOptions
-                                ]}
-                                icon={<User className="h-5 w-5 text-gray-400" />}
-                            />
+                        <Input
+                            label="Age (years)"
+                            name="age"
+                            type="number"
+                            value={formData.age.toString()}
+                            onChange={handleChange}
+                            error={errors.age}
+                            icon={<Calendar className="h-5 w-5 text-gray-400" />}
+                            placeholder="2"
+                            min="0"
+                            required
+                        />
+                    </div>
 
-                            <Input
-                                label="Age (years)"
-                                name="age"
-                                type="number"
-                                value={formData.age.toString()}
-                                onChange={handleChange}
-                                error={errors.age}
-                                icon={<Calendar className="h-5 w-5 text-gray-400" />}
-                                placeholder="2"
-                                min="0"
-                                required
-                            />
-                        </div>
-
-                        {/* Image Upload */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Animal Photo
-                            </label>
-                            <div className="flex items-center space-x-4">
-                                <div className="flex-1">
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageChange}
-                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
-                                    />
-                                </div>
-                                {(imagePreview || formData.img_url) && (
-                                    <div className="relative inline-block">
-                                        <div className="w-32 h-32">
-                                            <img
-                                                src={imagePreview || formData.img_url}
-                                                alt="Animal preview"
-                                                className="w-full h-full object-cover rounded-lg border border-gray-300"
-                                                onError={(e) => {
-                                                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x300?text=Invalid+Image';
-                                                }}
-                                            />
-                                        </div>
-                                        {/* Nút xóa ảnh overlay */}
-                                        <button
-                                            type="button"
-                                            onClick={handleRemoveImage}
-                                            className="absolute -top-2 -right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors duration-200 shadow-lg"
-                                            title="Remove image"
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                )}
+                    {/* Image Upload */}
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                            Animal Photo
+                        </label>
+                        <div className="flex items-center space-x-4">
+                            <div className="flex-1">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+                                />
                             </div>
-                            {errors.img_url && (
-                                <p className="text-sm text-red-600">{errors.img_url}</p>
+                            {(imagePreview || formData.img_url) && (
+                                <div className="relative inline-block">
+                                    <div className="w-32 h-32">
+                                        <img
+                                            src={imagePreview || formData.img_url}
+                                            alt="Animal preview"
+                                            className="w-full h-full object-cover rounded-lg border border-gray-300"
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x300?text=Invalid+Image';
+                                            }}
+                                        />
+                                    </div>
+                                    {/* Nút xóa ảnh overlay */}
+                                    <button
+                                        type="button"
+                                        onClick={handleRemoveImage}
+                                        className="absolute -top-2 -right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors duration-200 shadow-lg"
+                                        title="Remove image"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                </div>
                             )}
                         </div>
+                        {errors.img_url && (
+                            <p className="text-sm text-red-600">{errors.img_url}</p>
+                        )}
+                    </div>
 
-                        {/* Description */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Description
-                            </label>
-                            <textarea
-                                name="description"
-                                value={formData.description}
-                                onChange={handleChange}
-                                rows={4}
-                                className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors resize-none ${errors.description ? 'border-red-500' : ''
-                                    }`}
-                                placeholder="Describe the animal's personality, behavior, special needs, medical history, etc..."
-                            />
-                            {errors.description && (
-                                <p className="text-sm text-red-600">{errors.description}</p>
-                            )}
-                            <p className="text-xs text-gray-500">
-                                Provide detailed information to help potential adopters understand the animal's needs.
-                            </p>
-                        </div>
+                    {/* Description */}
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                            Description
+                        </label>
+                        <textarea
+                            name="description"
+                            value={formData.description}
+                            onChange={handleChange}
+                            rows={4}
+                            className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors resize-none ${errors.description ? 'border-red-500' : ''
+                                }`}
+                            placeholder="Describe the animal's personality, behavior, special needs, medical history, etc..."
+                        />
+                        {errors.description && (
+                            <p className="text-sm text-red-600">{errors.description}</p>
+                        )}
+                        <p className="text-xs text-gray-500">
+                            Provide detailed information to help potential adopters understand the animal's needs.
+                        </p>
+                    </div>
 
-                        <div className="flex space-x-4">
-                            <Button
-                                type="button"
-                                onClick={onCancel}
-                                variant="outline"
-                                className="flex-1"
-                                size="lg"
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                type="submit"
-                                className="flex-1"
-                                size="lg"
-                                loading={isLoading}
-                                disabled={isLoading}
-                            >
-                                <Save className="h-4 w-4 mr-2" />
-                                Add Animal
-                            </Button>
-                        </div>
-                    </form>
-                )}
+                    <div className="flex space-x-4">
+                        <Button
+                            type="button"
+                            onClick={onCancel}
+                            variant="outline"
+                            className="flex-1"
+                            size="lg"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            className="flex-1"
+                            size="lg"
+                            loading={isLoading}
+                            disabled={isLoading}
+                        >
+                            <Save className="h-4 w-4 mr-2" />
+                            Add Animal
+                        </Button>
+                    </div>
+                </form>
             </div>
         </div>
     );

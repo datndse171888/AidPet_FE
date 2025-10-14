@@ -136,7 +136,7 @@ export const AdminAnimalCard: React.FC<AdminAnimalCardProps> = ({
                 onClick={() => onReject(animal.animalUuid)}
                 variant="outline"
                 size="sm"
-                className="text-red-600 hover:bg-red-50 border-red-300"
+                className="text-red-600 hover:bg-red-500 border-red-300"
               >
                 <X className="h-4 w-4" />
                 Reject

@@ -23,7 +23,7 @@ export const authApi = {
   },
 
   getProfile: (uuid: string) => {
-    return api.get<AccountResponse>('/user/' + uuid);
+    return api.get<AccountResponse>('/users/' + uuid);
   },
 
   //   updateProfile: (userData: {
@@ -44,7 +44,7 @@ export const authApi = {
   },
 
   resetPassword: (data: ResetPasswordRequest, token: string) => {
-    return api.post('/user/reset-password', data, { headers: { Authorization: `Bearer ${token}` } });
+    return api.post('/users/reset-password', data, { headers: { Authorization: `Bearer ${token}` } });
   },
 
   // Get all users (admin only)

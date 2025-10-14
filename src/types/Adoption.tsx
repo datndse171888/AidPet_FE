@@ -37,3 +37,7 @@ export interface Adoption {
     animal: Animal;
     approvalDate: string;
 }
+
+export interface AdoptionStatusUpdateRequest {
+    status: status;
+}

@@ -1,14 +1,14 @@
 import React from 'react';
 import { ShoppingCart, Package, Palette, HardDrive, Tag } from 'lucide-react';
 import { Button } from '../Button';
-import { ProductDetail, ProductDetailResponse } from '../../../types/Product';
+import { ProductResponse } from '../../../types/Product';
 
-interface ProductDetailCardProps {
-  product: ProductDetailResponse;
-  onAddToCart: (productDetailId: string) => void;
+interface ProductCardProps {
+  product: ProductResponse;
+  onAddToCart: (productId: string) => void;
 }
 
-export const ProductDetailCard: React.FC<ProductDetailCardProps> = ({ 
+export const ProductCard: React.FC<ProductCardProps> = ({ 
   product, 
   onAddToCart 
 }) => {
@@ -20,9 +20,9 @@ export const ProductDetailCard: React.FC<ProductDetailCardProps> = ({
   };
 
   const getStockStatus = () => {
-    if (product.stockQuantity === 0) {
+    if (product.stock_quantity === 0) {
       return { text: 'Out of Stock', className: 'bg-red-100 text-red-800' };
-    } else if (product.stockQuantity < 10) {
+    } else if (product.stock_quantity < 10) {
       return { text: 'Low Stock', className: 'bg-yellow-100 text-yellow-800' };
     } else {
       return { text: 'In Stock', className: 'bg-green-100 text-green-800' };
@@ -36,12 +36,9 @@ export const ProductDetailCard: React.FC<ProductDetailCardProps> = ({
       {/* Product Image */}
       <div className="aspect-w-16 aspect-h-12 bg-gray-200 flex-shrink-0">
         <img
-          src={product.imageUrl}
-          alt={product.variantName}
+          src={product.imgUrl || 'https://via.placeholder.com/300x200?text=No+Image'}
+          alt={product.variant_name}
           className="w-full h-48 object-cover"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=No+Image';
-          }}
         />
       </div>
 
@@ -50,7 +47,7 @@ export const ProductDetailCard: React.FC<ProductDetailCardProps> = ({
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 flex-1">
-            {product.variantName}
+            {product.variant_name}
           </h3>
           <span className="ml-2 text-lg font-bold text-orange-500">
             {formatPrice(product.price)}
@@ -91,7 +88,7 @@ export const ProductDetailCard: React.FC<ProductDetailCardProps> = ({
             <div className="flex items-center text-sm text-gray-600">
               <Package className="h-4 w-4 mr-2 text-gray-400" />
               <span className="font-medium">Stock:</span>
-              <span className="ml-1">{product.stockQuantity} units</span>
+              <span className="ml-1">{product.stock_quantity} units</span>
             </div>
             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${stockStatus.className}`}>
               {stockStatus.text}
@@ -102,13 +99,13 @@ export const ProductDetailCard: React.FC<ProductDetailCardProps> = ({
         {/* Add to Cart Button */}
         <div className="mt-auto">
           <Button
-            onClick={() => onAddToCart(product.detailId)}
+            onClick={() => onAddToCart(product.productId)}
             className="w-full bg-orange-600 hover:bg-orange-700"
             size="sm"
-            disabled={product.stockQuantity === 0}
+            disabled={product.stock_quantity === 0}
           >
             <ShoppingCart className="h-4 w-4 mr-2" />
-            {product.stockQuantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+            {product.stock_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
           </Button>
         </div>
       </div>

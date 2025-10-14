@@ -1,13 +1,22 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { AccountResponse } from "../types/User";
+import { AccountResponse, role } from "../types/User";
 
 // Hook để lấy thông tin user (bạn có thể thay đổi logic này)
 interface AuthorizedUser {
   uuid: string;
   email: string;
-  role: 'USER' | 'ADMIN' | 'STAFF' | 'SPONSOR' | 'SHELTER';
+  role: role;
   isAuthenticated: boolean;
+}
+
+interface UserInformation {
+  uuid: string;
+  userName: string;
+  fullName: string;
+  phone: string;
+  email: string;
+  address: string;
 }
 
 export const useAuth = (): AuthorizedUser | null => {
@@ -18,13 +27,35 @@ export const useAuth = (): AuthorizedUser | null => {
   
   try {
     const userData: AccountResponse = JSON.parse(userDataString);
-    const role = userData.role as 'USER' | 'ADMIN' | 'STAFF' | 'SPONSOR' | 'SHELTER';
+    const role = userData.role as role;
     
     return {
       uuid: userData.uuid || '',
       email: userData.email || '',
       role: role || 'USER',
       isAuthenticated: true
+    };
+  } catch (error) {
+    return null;
+  }
+};
+
+export const useData = (): UserInformation | null => {
+  // Ví dụ: lấy từ localStorage hoặc context
+  const userDataString = localStorage.getItem('user');
+  
+  if (!userDataString) return null;
+  
+  try {
+    const userData: AccountResponse = JSON.parse(userDataString);
+    
+    return {
+      uuid: userData.uuid || '',
+      email: userData.email || '',
+      userName: userData.userName || '',
+      fullName: userData.fullName || '',
+      phone: userData.phone || '',
+      address: userData.address || ''
     };
   } catch (error) {
     return null;

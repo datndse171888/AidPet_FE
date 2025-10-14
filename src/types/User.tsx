@@ -3,7 +3,7 @@ import { Order } from "./Order";
 import { Shelter } from "./Shelter";
 import { Sponsor } from "./Sponsor";
 
-type role = 'USER' | 'ADMIN' | 'STAFF' | 'SPONSOR' | 'SHELTER';
+export type role = 'USER' | 'ADMIN' | 'STAFF' | 'SPONSOR' | 'SHELTER';
 
 export interface LoginFormData {
   userName: string;
