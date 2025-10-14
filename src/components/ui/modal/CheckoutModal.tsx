@@ -36,19 +36,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
     // Form state
     const [shippingAddress, setShippingAddress] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState('CREDIT_CARD');
+    const [paymentMethod, setPaymentMethod] = useState('VNPAY');
     const [useUserAddress, setUseUserAddress] = useState(true);
 
 
     const [errors, setErrors] = useState<Record<string, string>>({});
-
-    // Payment methods
-    const paymentMethods = [
-        { value: 'CREDIT_CARD', label: 'Credit Card', icon: CreditCard },
-        { value: 'PAYPAL', label: 'PayPal', icon: CreditCard },
-        { value: 'BANK_TRANSFER', label: 'Bank Transfer', icon: CreditCard },
-        { value: 'CASH_ON_DELIVERY', label: 'Cash on Delivery', icon: Truck }
-    ];
 
     //====================
     // fetch data & effects
@@ -109,7 +101,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         const orderData: OrderRequest = {
             userId: user?.uuid || '',
             shippingAddress: finalShippingAddress || '',
-            paymentMethod,
+            paymentMethod: paymentMethod || 'VNPAY',
             orderDetails: cartItems
         };
 
@@ -209,33 +201,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                                     <span>${total.toFixed(2)}</span>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Payment Method */}
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Method</h3>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            {paymentMethods.map((method) => (
-                                                <label
-                                                    key={method.value}
-                                                    className={`flex items-center p-3 border-2 rounded-lg cursor-pointer transition-all ${paymentMethod === method.value
-                                                        ? 'border-orange-500 bg-orange-50'
-                                                        : 'border-gray-200 hover:border-gray-300'
-                                                        }`}
-                                                >
-                                                    <input
-                                                        type="radio"
-                                                        name="paymentMethod"
-                                                        value={method.value}
-                                                        checked={paymentMethod === method.value}
-                                                        onChange={(e) => setPaymentMethod(e.target.value)}
-                                                        className="sr-only"
-                                                    />
-                                                    <method.icon className="h-5 w-5 text-gray-600 mr-3" />
-                                                    <span className="font-medium text-sm">{method.label}</span>
-                                                </label>
-                                            ))}
                                         </div>
                                     </div>
                                 </div>
