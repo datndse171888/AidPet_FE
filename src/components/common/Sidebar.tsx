@@ -25,6 +25,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
       key: 'posts'
     },
     {
+      icon: User,
+      label: 'Account Manage',
+      path: '/admin/accounts',
+      key: 'accounts'
+    },
+    {
       icon: Heart,
       label: 'Animal Manage',
       path: '/admin/animals',

@@ -4,7 +4,6 @@ import { Animal, AnimalResponse, AnimalUpdateStatusRequest } from '../../types/A
 import { AdminAnimalCard } from '../../components/ui/card/AdminAnimalCard';
 import { AnimalDetailModal } from '../../components/ui/modal/AnimalDetailModal';
 import { animalApi } from '../../services/api/AnimalApi';
-import { adminAnimalApi } from '../../services/api/AdminAnimalApi';
 
 export const AnimalManager: React.FC = () => {
   const [animals, setAnimals] = useState<AnimalResponse[]>([]);
@@ -24,20 +23,13 @@ export const AnimalManager: React.FC = () => {
 
   const getPendingAnimals = async () => {
     try {
-      // Use admin API for pending animals
-      const response = await adminAnimalApi.getPendingAnimals(0, 100);
-      setAnimals(response.data.content || []);
+      // Replace with actual API call
+      const response = await animalApi.getByStatus(100, 0);
+      setAnimals(response.data);
     } catch (error) {
-      console.warn('Admin API not available, using fallback:', error);
-      // Fallback to regular API
-      try {
-        const response = await animalApi.getByStatus(100, 0);
-        setAnimals(response.data);
-      } catch (fallbackError) {
-        console.error('Failed to fetch animals:', fallbackError);
-      }
+      console.error('Failed to fetch animals:', error);
     }
-  };
+  }
 
   const filteredAnimals = animals.filter(animal => {
     const matchesSearch = animal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -82,10 +74,9 @@ export const AnimalManager: React.FC = () => {
         const updatedAnimal: AnimalResponse = response.data;
         console.table(updatedAnimal);
       } catch (error) {
-        console.error('Failed to reject animal:', error);
+        console.error('Failed to approve animal:', error);
         return;
-      }
-      console.log('Rejected animal:', animalId);
+      } console.log('Rejected animal:', animalId);
     }
   };
 

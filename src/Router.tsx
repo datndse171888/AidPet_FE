@@ -21,9 +21,9 @@ import { PostManager } from './pages/admin/PostManager'
 import { Dashboard } from './pages/admin/Dashboard'
 import { AdminProfile } from './pages/admin/AdminProfile'
 import { AdminSetting } from './pages/admin/AdminSetting'
-import { AdoptAnimal } from './pages/public/AdoptAnimal'
 import { AnimalManager } from './pages/admin/AnimalManager'
 import { Animal } from './pages/public/Animal'
+import { AccountManager } from './pages/admin/AccountManager'
 import { Product } from './pages/public/Product'
 
 export const Router: React.FC = () => {
@@ -38,7 +38,6 @@ export const Router: React.FC = () => {
                             <Route path='news' element={<News />} />
                             <Route path='news/:id' element={<NewsDetail />} />
                             <Route path='product' element={<Product />} />
-                            <Route path='adopt-animal' element={<AdoptAnimal />} />
                             <Route path='animal' element={<Animal />} />
                             <Route path='profile' element={
                                 <AuthorizationRoute requireAuth={true}>
@@ -59,6 +58,7 @@ export const Router: React.FC = () => {
                             <Route path='dashboard' element={<Dashboard />} />
                             <Route path='posts' element={<PostManager />} />
                             <Route path='animals' element={<AnimalManager />} />
+                            <Route path='accounts' element={<AccountManager />} />
                             <Route path='profile' element={<AdminProfile />} />
                             <Route path='settings' element={<AdminSetting />} />
                         </Route>

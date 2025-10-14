@@ -162,7 +162,7 @@
 ```json
 {
   "shelterUuid": "SHELTER_UUID_FROM_STEP_5",
-  "categoryAnimalsUuid": "ANIMAL_CATEGORY_UUID",
+  "categoryAnimalsUuid": "a584c4a7-12cb-4485-ac30-e36e0c445450", //name: dog, des: dog lover
   "name": "Buddy",
   "age": 2,
   "breed": "Golden Retriever",

@@ -25,6 +25,7 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
   const [statusFilter, setStatusFilter] = useState<'all' | 'AVAILABLE' | 'ADOPTED' | 'RESCUED' | 'PENDING'>('all');
   const [isLoading, setIsLoading] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+
   const shelter: ShelterResponse = JSON.parse(localStorage.getItem('shelter') || '{}');
   const shelterId = shelter.shelterUuid;
 
@@ -41,19 +42,29 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
 
   const getAnimalByShelter = async () => {
     try {
-      const response = await animalApi.getByShelter(shelterId, 100, 1);
-      console.log('API response:', response);
+      const response = await animalApi.getByShelter(shelterId);
       const data: DataResponse<AnimalResponse> = response.data;
-      setAnimals(data.data);
+      if (data && data.listData && Array.isArray(data.listData)) {
+        setAnimals(data.listData);
+      } else {
+        setAnimals([]); // Fallback to empty array
+      }
     } catch (error) {
       console.error('Failed to fetch animals:', error);
+      setAnimals([]); 
     }
   }
 
-  const filteredAnimals = animals.filter(animal => {
-    const matchesSearch = animal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      animal.breed.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      animal.categoryAnimals.categoryName.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredAnimals = (animals || []).filter(animal => {
+    if (!animal) return false;
+    // Null checks để tránh lỗi
+    const name = animal.name || '';
+    const breed = animal.breed || '';
+    const categoryName = animal.categoryAnimals?.categoryName || '';
+
+    const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      breed.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      categoryName.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus = statusFilter === 'all' || animal.status === statusFilter;
 
@@ -96,11 +107,6 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
       console.log('Saving animal:', animalData);
 
       // Update the animal in the list
-
-
-
-
-      alert('Animal updated successfully!');
     } catch (error) {
       console.error('Failed to save animal:', error);
       throw error;
@@ -126,11 +132,11 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
   }
 
   const stats = {
-    total: animals.length,
-    available: animals.filter(a => a.status === 'AVAILABLE').length,
-    adopted: animals.filter(a => a.status === 'ADOPTED').length,
-    pending: animals.filter(a => a.status === 'PENDING').length,
-    rescued: animals.filter(a => a.status === 'RESCUED').length
+    total: animals?.length || 0,
+    available: animals?.filter(a => a.status === 'AVAILABLE').length || 0,
+    adopted: animals?.filter(a => a.status === 'ADOPTED').length || 0,
+    pending: animals?.filter(a => a.status === 'PENDING').length || 0,
+    rescued: animals?.filter(a => a.status === 'RESCUED').length || 0
   };
 
   return (
@@ -213,19 +219,29 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
       {isLoading ? (
         <div className="flex justify-center items-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+          <span className="ml-3 text-gray-600">Loading animals...</span>
         </div>
       ) : filteredAnimals.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAnimals.map((animal) => (
-            <AnimalCard
-              key={animal.animalUuid}
-              animal={animal}
-              onViewDetail={handleViewDetail}
-              onEdit={handleEditAnimal}
-              onDelete={handleDeleteAnimal}
-              showShelterInfo={false} // Don't show shelter info since this is shelter's own page
-            />
-          ))}
+          {/* Fix: Ensure unique keys và null checks */}
+          {filteredAnimals.map((animal) => {
+            // Double check animal exists và có animalUuid
+            if (!animal || !animal.animalUuid) {
+              console.warn('Invalid animal data:', animal);
+              return null;
+            }
+            
+            return (
+              <AnimalCard
+                key={animal.animalUuid} // This should be unique
+                animal={animal}
+                onViewDetail={handleViewDetail}
+                onEdit={handleEditAnimal}
+                onDelete={handleDeleteAnimal}
+                showShelterInfo={false}
+              />
+            );
+          }).filter(Boolean)} {/* Remove null elements */}
         </div>
       ) : (
         <div className="text-center py-12">

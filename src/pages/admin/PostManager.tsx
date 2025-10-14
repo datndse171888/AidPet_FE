@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, FileText, TrendingUp, Clock, CheckCircle } from 'lucide-react';
+import { Search, Filter, FileText, TrendingUp, Clock, CheckCircle, Plus } from 'lucide-react';
 import { Post } from '../../types/Post';
 import { AdminPostCard } from '../../components/ui/card/AdminPostCard';
 import { PostDetailModal } from '../../components/ui/modal/PostDetailModal';
 import { PostApprovalModal } from '../../components/ui/modal/PostApprovalModal';
 import { adminPostApi } from '../../services/api/AdminPostApi';
+import { postApi } from '../../services/api/PostApi';
 
 export const PostManager: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -17,6 +18,9 @@ export const PostManager: React.FC = () => {
   const [approvalAction, setApprovalAction] = useState<'approve' | 'reject'>('approve');
   const [approvalPostId, setApprovalPostId] = useState<string>('');
   const [approvalLoading, setApprovalLoading] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newPost, setNewPost] = useState({ topic: '', htmlContent: '', deltaContent: '', categoryId: '', thumbnail: '' });
+  const [creating, setCreating] = useState(false);
 
   // Fetch posts from API with automatic fallback
   useEffect(() => {
@@ -119,6 +123,13 @@ export const PostManager: React.FC = () => {
             Review and manage all posts from shelters across the platform
           </p>
         </div>
+        <button
+          onClick={() => setShowCreate(true)}
+          className="inline-flex items-center px-4 py-2 rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition-colors shadow"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Create Post
+        </button>
       </div>
 
       {/* Stats Cards */}
@@ -253,6 +264,63 @@ export const PostManager: React.FC = () => {
         postTitle={posts.find(p => p.id === approvalPostId)?.topic || ''}
         isLoading={approvalLoading}
       />
+
+      {/* Create Post Modal */}
+      {showCreate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Create Post</h2>
+              <button className="text-gray-500 hover:text-gray-700" onClick={() => setShowCreate(false)}>✕</button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input placeholder="Enter title" className="w-full border rounded px-3 py-2" value={newPost.topic} onChange={e => setNewPost({ ...newPost, topic: e.target.value })} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category ID</label>
+                <input placeholder="e.g. category uuid" className="w-full border rounded px-3 py-2" value={newPost.categoryId} onChange={e => setNewPost({ ...newPost, categoryId: e.target.value })} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Thumbnail URL</label>
+                <input placeholder="https://..." className="w-full border rounded px-3 py-2" value={newPost.thumbnail} onChange={e => setNewPost({ ...newPost, thumbnail: e.target.value })} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">HTML Content</label>
+                <textarea placeholder="Write HTML content" className="w-full border rounded px-3 py-2 h-28" value={newPost.htmlContent} onChange={e => setNewPost({ ...newPost, htmlContent: e.target.value })} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Delta Content (JSON)</label>
+                <textarea placeholder='{"ops":[]}' className="w-full border rounded px-3 py-2 h-24" value={newPost.deltaContent} onChange={e => setNewPost({ ...newPost, deltaContent: e.target.value })} />
+              </div>
+            </div>
+            <div className="p-6 border-t border-gray-200 flex items-center justify-end gap-3">
+              <button className="px-4 py-2 rounded border" onClick={() => setShowCreate(false)}>Cancel</button>
+              <button
+                disabled={creating}
+                className="px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50"
+                onClick={async () => {
+                  setCreating(true);
+                  try {
+                    await postApi.createPost(newPost as any);
+                    const refreshed = await adminPostApi.getAllPosts(0, 100);
+                    setPosts(refreshed.data.listData || []);
+                    setShowCreate(false);
+                    setNewPost({ topic: '', htmlContent: '', deltaContent: '', categoryId: '', thumbnail: '' });
+                  } catch (e) {
+                    // noop; ideally show toast
+                  } finally {
+                    setCreating(false);
+                  }
+                }}
+              >
+                {creating ? 'Creating...' : 'Create'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
