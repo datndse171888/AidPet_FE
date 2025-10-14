@@ -86,7 +86,7 @@
   "topic": "Help Us Save Abandoned Puppies - Urgent Medical Care Needed",
   "htmlContent": "<p>We recently rescued several abandoned puppies who need urgent medical care and loving homes. These adorable little ones were found in poor condition but are now receiving the care they need at our shelter.</p><p>They need:</p><ul><li>Medical treatment for malnutrition</li><li>Vaccinations</li><li>Spaying/neutering</li><li>Loving forever homes</li></ul>",
   "deltaContent": "{\"ops\":[{\"insert\":\"We recently rescued several abandoned puppies who need urgent medical care and loving homes...\"}]}",
-  "categoryId": "CATEGORY_UUID_FROM_STEP_3",
+  "categoryId": "2440fac1-7fe4-49af-872c-edefa55dc7f4",
   "thumbnail": "https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=400"
 }
 ```

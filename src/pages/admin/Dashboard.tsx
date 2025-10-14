@@ -8,6 +8,7 @@ import {
   BarChart3
 } from 'lucide-react';
 import { adminDashboardApi } from '../../services/api/AdminDashboardApi';
+import { adminUserApi } from '../../services/api/AdminUserApi';
 
 export const Dashboard: React.FC = () => {
   const [stats, setStats] = useState({
@@ -16,7 +17,10 @@ export const Dashboard: React.FC = () => {
     pendingPosts: 0,
     approvedPosts: 0,
     totalViews: 0,
-    activeToday: 0
+    activeToday: 0,
+    totalOrders: 0,
+    totalRevenue: 0,
+    feedbackCount: 0
   });
 
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
@@ -40,14 +44,19 @@ export const Dashboard: React.FC = () => {
       setIsLoading(true);
       try {
         // Use API service with automatic fallback to mock data
-                const [statsData, activityData, healthData, summaryData] = await Promise.all([
+                const [statsData, activityData, healthData, summaryData, userStats] = await Promise.all([
                   adminDashboardApi.getDashboardStats(),
                   adminDashboardApi.getRecentActivity(10),
                   adminDashboardApi.getSystemHealth(),
-                  adminDashboardApi.getTodaySummary()
+                  adminDashboardApi.getTodaySummary(),
+                  adminUserApi.getUserStats()
                 ]);
 
-                setStats(statsData.data);
+                setStats(prev => ({
+                  ...prev,
+                  ...statsData.data,
+                  totalUsers: userStats.data.total ?? statsData.data.totalUsers ?? 0
+                }));
                 setRecentActivity(activityData.data);
                 setSystemHealth(healthData.data);
                 setTodaySummary(summaryData.data);
@@ -61,7 +70,10 @@ export const Dashboard: React.FC = () => {
           pendingPosts: 0,
           approvedPosts: 0,
           totalViews: 0,
-          activeToday: 0
+          activeToday: 0,
+          totalOrders: 0,
+          totalRevenue: 0,
+          feedbackCount: 0
         });
         setRecentActivity([]);
         setSystemHealth({
@@ -94,24 +106,24 @@ export const Dashboard: React.FC = () => {
       changeType: 'increase'
     },
     {
-      title: 'Total Posts',
-      value: stats.totalPosts.toString(),
+      title: 'Transaction Amount',
+      value: stats.totalOrders.toLocaleString(),
       icon: FileText,
       color: 'bg-green-500',
       change: '+8%',
       changeType: 'increase'
     },
     {
-      title: 'Pending Review',
-      value: stats.pendingPosts.toString(),
+      title: 'Feedback',
+      value: stats.feedbackCount.toLocaleString(),
       icon: Clock,
       color: 'bg-yellow-500',
       change: '-2%',
       changeType: 'decrease'
     },
     {
-      title: 'Total Views',
-      value: stats.totalViews.toLocaleString(),
+      title: 'Income',
+      value: stats.totalRevenue.toLocaleString(),
       icon: TrendingUp,
       color: 'bg-purple-500',
       change: '+24%',

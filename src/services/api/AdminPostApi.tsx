@@ -31,7 +31,8 @@ export interface PostStats {
 export const adminPostApi = {
   // Get all posts with pagination and filtering
   getAllPosts: (page: number = 0, size: number = 10) => {
-    return api.get<DataResponse<Post>>(`/post?page=${page}&size=${size}`);
+    // Use admin endpoint that returns paging metadata compatible with PostManager
+    return api.get<DataResponse<Post>>(`/admin/posts?page=${page}&size=${size}`);
   },
 
   // Get posts with filters

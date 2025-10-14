@@ -29,7 +29,9 @@ export const PostManager: React.FC = () => {
       try {
         // Use API service with automatic fallback to mock data
                 const response = await adminPostApi.getAllPosts(0, 100);
-                setPosts(response.data.listData || []);
+                // Accept both shapes: { content: Post[] } or { listData: Post[] }
+                const list = (response.data as any).content || (response.data as any).listData || [];
+                setPosts(list);
       } catch (error) {
         console.error('Failed to fetch posts:', error);
         setPosts([]);
@@ -305,7 +307,8 @@ export const PostManager: React.FC = () => {
                   try {
                     await postApi.createPost(newPost as any);
                     const refreshed = await adminPostApi.getAllPosts(0, 100);
-                    setPosts(refreshed.data.listData || []);
+                    const list = (refreshed.data as any).content || (refreshed.data as any).listData || [];
+                    setPosts(list);
                     setShowCreate(false);
                     setNewPost({ topic: '', htmlContent: '', deltaContent: '', categoryId: '', thumbnail: '' });
                   } catch (e) {
