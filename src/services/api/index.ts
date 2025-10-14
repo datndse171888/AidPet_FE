@@ -4,6 +4,7 @@ export { animalApi } from './AnimalApi';
 export { postApi } from './PostApi';
 export { shelterApi } from './ShelterApi';
 export { categoryApi } from './CategoryApi';
+export { categoryBlogApi } from './CategoryBlogApi';
 export { productApi } from './ProductApi';
 export { adoptionApi } from './AdoptionApi';
 

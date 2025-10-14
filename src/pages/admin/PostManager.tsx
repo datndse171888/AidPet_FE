@@ -6,6 +6,7 @@ import { PostDetailModal } from '../../components/ui/modal/PostDetailModal';
 import { PostApprovalModal } from '../../components/ui/modal/PostApprovalModal';
 import { adminPostApi } from '../../services/api/AdminPostApi';
 import { postApi } from '../../services/api/PostApi';
+import { categoryBlogApi, CategoryBlog, CategoryBlogRequest } from '../../services/api/CategoryBlogApi';
 
 export const PostManager: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -21,6 +22,11 @@ export const PostManager: React.FC = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [newPost, setNewPost] = useState({ topic: '', htmlContent: '', deltaContent: '', categoryId: '', thumbnail: '' });
   const [creating, setCreating] = useState(false);
+  const [categories, setCategories] = useState<CategoryBlog[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [creatingCategory, setCreatingCategory] = useState(false);
 
   // Fetch posts from API with automatic fallback
   useEffect(() => {
@@ -42,6 +48,26 @@ export const PostManager: React.FC = () => {
 
     fetchPosts();
   }, []);
+
+  // Fetch categories when modal opens
+  useEffect(() => {
+    const fetchCategories = async () => {
+      if (showCreate && categories.length === 0) {
+        setLoadingCategories(true);
+        try {
+          const response = await categoryBlogApi.getAllCategoryBlogs();
+          setCategories(response.data);
+        } catch (error) {
+          console.error('Failed to fetch categories:', error);
+          setCategories([]);
+        } finally {
+          setLoadingCategories(false);
+        }
+      }
+    };
+
+    fetchCategories();
+  }, [showCreate, categories.length]);
 
   const filteredPosts = posts.filter(post => {
     const matchesSearch = post.topic.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -273,7 +299,7 @@ export const PostManager: React.FC = () => {
           <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
               <h2 className="text-lg font-semibold">Create Post</h2>
-              <button className="text-gray-500 hover:text-gray-700" onClick={() => setShowCreate(false)}>✕</button>
+              <button className="text-gray-500 hover:text-gray-700 cursor-pointer" onClick={() => setShowCreate(false)}>✕</button>
             </div>
             <div className="p-6 space-y-4">
               <div>
@@ -281,8 +307,83 @@ export const PostManager: React.FC = () => {
                 <input placeholder="Enter title" className="w-full border rounded px-3 py-2" value={newPost.topic} onChange={e => setNewPost({ ...newPost, topic: e.target.value })} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category ID</label>
-                <input placeholder="e.g. category uuid" className="w-full border rounded px-3 py-2" value={newPost.categoryId} onChange={e => setNewPost({ ...newPost, categoryId: e.target.value })} />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select 
+                  className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  value={newPost.categoryId} 
+                  onChange={e => {
+                    if (e.target.value === 'add_new') {
+                      setShowNewCategory(true);
+                      setNewPost({ ...newPost, categoryId: '' });
+                    } else {
+                      setNewPost({ ...newPost, categoryId: e.target.value });
+                    }
+                  }}
+                  disabled={loadingCategories}
+                  aria-label="Select category"
+                >
+                  <option value="">Select a category</option>
+                  {categories.map(category => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                  <option value="add_new">+ Add New Category</option>
+                </select>
+                {loadingCategories && (
+                  <p className="text-sm text-gray-500 mt-1">Loading categories...</p>
+                )}
+                
+                {/* New Category Input */}
+                {showNewCategory && (
+                  <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Enter new category name"
+                        className="flex-1 border rounded px-3 py-2"
+                        value={newCategoryName}
+                        onChange={e => setNewCategoryName(e.target.value)}
+                      />
+                      <button
+                        onClick={async () => {
+                          if (!newCategoryName.trim()) {
+                            alert('Please enter a category name');
+                            return;
+                          }
+                          
+                          setCreatingCategory(true);
+                          try {
+                            const response = await categoryBlogApi.createCategoryBlog({ name: newCategoryName.trim() });
+                            const newCategory = response.data;
+                            setCategories(prev => [...prev, newCategory]);
+                            setNewPost({ ...newPost, categoryId: newCategory.id });
+                            setShowNewCategory(false);
+                            setNewCategoryName('');
+                          } catch (e) {
+                            console.error('Failed to create category:', e);
+                            alert('Failed to create category. Please try again.');
+                          } finally {
+                            setCreatingCategory(false);
+                          }
+                        }}
+                        disabled={creatingCategory}
+                        className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 cursor-pointer transition-colors disabled:opacity-50"
+                      >
+                        {creatingCategory ? 'Creating...' : 'Add'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowNewCategory(false);
+                          setNewCategoryName('');
+                        }}
+                        className="px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 cursor-pointer transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Thumbnail URL</label>
@@ -298,21 +399,28 @@ export const PostManager: React.FC = () => {
               </div>
             </div>
             <div className="p-6 border-t border-gray-200 flex items-center justify-end gap-3">
-              <button className="px-4 py-2 rounded border" onClick={() => setShowCreate(false)}>Cancel</button>
+              <button className="px-4 py-2 rounded border hover:bg-gray-50 cursor-pointer transition-colors" onClick={() => setShowCreate(false)}>Cancel</button>
               <button
                 disabled={creating}
-                className="px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50"
+                className="px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50 cursor-pointer transition-colors"
                 onClick={async () => {
+                  if (!newPost.categoryId) {
+                    alert('Please select a category');
+                    return;
+                  }
+                  
                   setCreating(true);
                   try {
                     await postApi.createPost(newPost as any);
+                    // Refresh posts list
                     const refreshed = await adminPostApi.getAllPosts(0, 100);
                     const list = (refreshed.data as any).content || (refreshed.data as any).listData || [];
                     setPosts(list);
                     setShowCreate(false);
                     setNewPost({ topic: '', htmlContent: '', deltaContent: '', categoryId: '', thumbnail: '' });
                   } catch (e) {
-                    // noop; ideally show toast
+                    console.error('Failed to create post:', e);
+                    alert('Failed to create post. Please try again.');
                   } finally {
                     setCreating(false);
                   }
