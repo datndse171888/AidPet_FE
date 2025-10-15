@@ -2,6 +2,7 @@ import React from 'react';
 import { ShoppingCart, Package, Palette, HardDrive, Tag } from 'lucide-react';
 import { Button } from '../Button';
 import { ProductResponse } from '../../../types/Product';
+import { formatPrice } from '../../../utils/FormatUtil';
 
 interface ProductCardProps {
   product: ProductResponse;
@@ -12,12 +13,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   product, 
   onAddToCart 
 }) => {
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(price);
-  };
 
   const getStockStatus = () => {
     if (product.stock_quantity === 0) {

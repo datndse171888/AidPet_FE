@@ -7,6 +7,8 @@ import { SettingTab } from './SettingTab';
 import { ShelterPostTab } from './ShelterPostTab';
 import { AnimalTab } from './AnimalTab'; // Import AnimalTab
 import { Animal } from '../../types/Animal'; // Import Animal type
+import { AdoptionTab } from './AdoptionTab';
+import { AdoptionResponse } from '../../types/Adoption';
 
 export const Profile: React.FC = () => {
     const [activeTab, setActiveTab] = useState<string>('profile');
@@ -70,12 +72,22 @@ export const Profile: React.FC = () => {
         console.log('Delete animal:', animalId);
     };
 
+    const handleViewAdoptionDetail = (adoption: AdoptionResponse) => {
+        console.log('View adoption detail:', adoption);
+    };
+
+    const handleAdoptionStatusUpdate = (adoptionId: string, status: 'APPROVE' | 'REJECT') => {
+        console.log('Adoption status updated:', adoptionId, status);
+    };
+
     const renderTabContent = () => {
         switch (activeTab) {
             case 'profile':
                 return <InformationTab user={user} onInformationUpdate={handleProfileUpdate} />;
             case 'settings':
                 return <SettingTab onPasswordChange={handlePasswordChange} />;
+            case 'adoptions':
+                return <AdoptionTab onViewDetail={handleViewAdoptionDetail} onStatusUpdate={handleAdoptionStatusUpdate} />;
             case 'posts':
                 return user.role === 'SHELTER' ? (
                     <ShelterPostTab

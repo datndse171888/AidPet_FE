@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, CreditCard, Truck, MapPin, User, Phone, Mail } from 'lucide-react';
+import { X, MapPin, User, Phone, Mail } from 'lucide-react';
 import { Button } from '../Button';
 import { Input } from '../input/Input';
 import { OrderRequest, OrderDetailItem } from '../../../types/Order';

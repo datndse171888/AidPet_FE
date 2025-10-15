@@ -191,6 +191,7 @@ export const Product: React.FC = () => {
         console.error('Order submission failed:', response.data);
       } else {
         const data: OrderResponse = response.data;
+        navigationService.goTo(data.paymentUrl);
         console.log('Order submitted successfully:', data);
       }
       
