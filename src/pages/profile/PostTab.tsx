@@ -11,7 +11,7 @@ interface PostTabProps {
   onDeletePost?: (postId: string) => void;
 }
 
-export const ShelterPostTab: React.FC<PostTabProps> = ({
+export const PostTab: React.FC<PostTabProps> = ({
   onViewDetail,
   onPostUp,
   onDeletePost

@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Settings, Newspaper, Heart, FileText } from 'lucide-react';
+import { User, Settings, Newspaper, Heart, FileText, Building } from 'lucide-react';
 import { useAuth } from '../../hooks/AuthorizationRoute';
 
 interface Tab {
@@ -26,9 +26,11 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({ activeTab, onTabChange
   const tabs = user?.role === 'SHELTER'
     ? [
       baseTabs[0], // Profile tab
+      { id: 'shelter', label: 'Shelter', icon: Building },
       { id: 'posts', label: 'Posts', icon: Newspaper },
       { id: 'animals', label: 'Animals', icon: Heart }, // Thêm Animals tab
-      baseTabs[1], // Settings tab
+      baseTabs[1],
+      baseTabs[2] // Settings tab
     ]
     : baseTabs;
 

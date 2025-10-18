@@ -14,13 +14,13 @@ export interface ShelterRequest {
 export interface ShelterResponse {
     shelterUuid: string,
     shelterName: string,
-    shelterAmount: number,
+    shelterAmount?: number,
     address: string,
     phone: string,
     email: string,
     description: string
-    adoption: Adoption;
-    animalList: Animal[];
+    adoption?: Adoption[];
+    animalList?: Animal[];
 }
 
 export interface Shelter {

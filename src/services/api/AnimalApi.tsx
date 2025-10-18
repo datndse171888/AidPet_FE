@@ -19,22 +19,22 @@ export const animalApi = {
     },
 
     // Get animals by shelter
-    getByShelter: (id: string, size: number, page: number) => {
-        return api.post<DataResponse<AnimalResponse>>(`/animals/shelter?size=${size}&page=${page}`, id); 
+    getByShelter: (id: string, size: number = 100, page: number = 0) => {
+        return api.post<DataResponse<AnimalResponse>>(`/animals/shelter?size=${size}&page=${page}`, { shelterUuid: id });
     },
 
     // Get all available animals
-    getAllAvailable: (size: number, page: number) => {
+    getAllAvailable: (size: number = 100, page: number = 0) => {
         return api.get<DataResponse<AnimalResponse>>(`/animals/available?size=${size}&page=${page}`);
     },
 
     // Get all animals with pagination
-    getAll: (page: number, size: number) => {
+    getAll: (size: number = 100, page: number = 0) => {
         return api.get<DataResponse<AnimalResponse>>(`/animals/get?page=${page}&size=${size}`);
     },
 
     // Get all animals with status (for admin)
-    getByStatus: (page: number, size: number) => {
+    getByStatus: (size: number = 100, page: number = 0) => {
         return api.get<DataResponse<AnimalResponse>>(`/animals/status?page=${page}&size=${size}`);
     },
 
@@ -49,7 +49,7 @@ export const animalApi = {
     },
 
     // Search animals
-    search: (query: string, page: number = 0, size: number = 10) => {
+    search: (query: string, size: number = 10, page: number = 0,) => {
         return api.get<DataResponse<AnimalResponse>>(`/animals/search?query=${query}&page=${page}&size=${size}`);
     },
 

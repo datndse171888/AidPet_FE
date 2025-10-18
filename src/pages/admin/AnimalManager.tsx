@@ -14,7 +14,7 @@ export const AnimalManager: React.FC = () => {
   const [animals, setAnimals] = useState<AnimalResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
+  const [selectedAnimal, setSelectedAnimal] = useState<AnimalResponse | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   //========================
@@ -32,7 +32,8 @@ export const AnimalManager: React.FC = () => {
     try {
       // Replace with actual API call
       const response = await animalApi.getByStatus(100, 0);
-      setAnimals(response.data);
+      const data = response.data;
+      setAnimals(data.listData);
     } catch (error) {
       console.error('Failed to fetch animals:', error);
       setAnimals([]);
@@ -53,7 +54,7 @@ export const AnimalManager: React.FC = () => {
     return matchesSearch;
   });
 
-  const handleViewDetail = (animal: Animal) => {
+  const handleViewDetail = (animal: AnimalResponse) => {
     setSelectedAnimal(animal);
     setShowDetailModal(true);
   };
