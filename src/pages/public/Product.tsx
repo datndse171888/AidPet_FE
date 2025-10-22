@@ -191,8 +191,10 @@ export const Product: React.FC = () => {
         console.error('Order submission failed:', response.data);
       } else {
         const data: OrderResponse = response.data;
-        navigationService.goTo(data.paymentUrl);
         console.log('Order submitted successfully:', data);
+        
+        // mở payment URL ở 1 tab khác nếu `paymentUrl` tồn tại
+        window.open(`${data.paymentUrl}`, '_blank');
       }
       
       // Clear cart after successful order

@@ -55,3 +55,7 @@ export interface OrderDetailResponse {
     quantity: number;
     subTotal: number;
 }
+
+export interface OrderUpdateStatusRequest{
+    statusOrder: paymentStatus;
+}
