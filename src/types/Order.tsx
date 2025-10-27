@@ -26,8 +26,6 @@ export interface OrderDetail {
 
 export interface OrderRequest {
     userId: string;
-    shippingAddress: string;
-    paymentMethod: string;
     orderDetails: OrderDetailItem[];
 }
 
