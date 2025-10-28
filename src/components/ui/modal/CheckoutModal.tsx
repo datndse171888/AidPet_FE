@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, CreditCard, Truck, MapPin, User, Phone, Mail } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { X, User, Phone, Mail } from 'lucide-react';
 import { Button } from '../Button';
 import { Input } from '../input/Input';
 import { OrderRequest, OrderDetailItem } from '../../../types/Order';
@@ -34,14 +34,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     const user = useAuth();
     const userInfo = useData();
 
-    // Form state
-    const [shippingAddress, setShippingAddress] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState('VNPAY');
-    const [useUserAddress, setUseUserAddress] = useState(true);
-
-
-    const [errors, setErrors] = useState<Record<string, string>>({});
-
     //====================
     // fetch data & effects
     //====================
@@ -71,51 +63,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     const tax = subtotal * 0.08; // 8% tax
     const total = subtotal + shippingCost + tax;
 
-    //====================
-    // Validate form
-    //====================
-
-    const validateForm = (): boolean => {
-        const newErrors: Record<string, string> = {};
-
-        if (!useUserAddress) {
-            if (!userInfo?.address.trim()) {
-                newErrors.address = 'Address is required';
-            }
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
     // Handle form submission
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!validateForm()) {
-            return;
-        }
-
-        const finalShippingAddress = useUserAddress ? userInfo?.address : shippingAddress;
-
         const orderData: OrderRequest = {
             userId: user?.uuid || '',
-            shippingAddress: finalShippingAddress || '',
-            paymentMethod: paymentMethod || 'VNPAY',
             orderDetails: cartItems
         };
 
         onSubmitOrder(orderData);
-    };
-
-    // Handle address toggle
-    const handleUseUserAddressChange = (use: boolean) => {
-        setUseUserAddress(use);
-        if (use && userInfo?.address) {
-            setShippingAddress(`${userInfo.address}`);
-        } else {
-            setShippingAddress('');
-        }
     };
 
     if (!isOpen) return null;
@@ -234,49 +191,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                                 />
                                             </div>
                                         </div>
-                                    </div>
-
-                                    {/* Shipping Address */}
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Shipping Address</h3>
-
-                                        {/* Use user address option */}
-                                        {userInfo?.address && (
-                                            <div className="mb-4">
-                                                <label className="flex items-center space-x-2">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={useUserAddress}
-                                                        onChange={(e) => handleUseUserAddressChange(e.target.checked)}
-                                                        className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-                                                    />
-                                                    <span className="text-sm text-gray-700">
-                                                        Use my default address ({userInfo.address})
-                                                    </span>
-                                                </label>
-                                            </div>
-                                        )}
-
-                                        {!useUserAddress && (
-                                            <div className="space-y-4">
-                                                <Input
-                                                    label="Address"
-                                                    value={userInfo?.address}
-                                                    icon={<MapPin />}
-                                                    onChange={(e) => setShippingAddress(e.target.value)}
-                                                    error={errors.address}
-                                                />
-                                            </div>
-                                        )}
-
-                                        {useUserAddress && userInfo?.address && (
-                                            <div className="bg-gray-50 rounded-lg p-4">
-                                                <p className="text-sm text-gray-700">
-                                                    <MapPin className="inline h-4 w-4 mr-1" />
-                                                    {userInfo.address}
-                                                </p>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             </div>

@@ -31,6 +31,7 @@ export interface AccountResponse {
   address: string,
   role: role,
   token: string,
+  enable: boolean,
   image: string
 }
 

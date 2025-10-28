@@ -73,7 +73,7 @@ export const AnimalTab: React.FC<AnimalTabProps> = ({
     setIsLoading(true);
 
     try {
-      const response = await animalApi.getByShelter(shelterId);
+      const response = await animalApi.getByShelter(shelterId, 100, 0);
       const data: DataResponse<AnimalResponse> = response.data;
 
       if (data && data.listData && Array.isArray(data.listData)) {

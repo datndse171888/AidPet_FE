@@ -4,6 +4,7 @@ import { Calendar, Eye, Tag, ArrowLeft, Share2, Heart } from 'lucide-react';
 import { Post } from '../../types/Post';
 import { Button } from '../../components/ui/Button';
 import { navigationService } from '../../utils/NavigationService';
+import { formatDate } from '../../utils/FormatUtil';
 
 export const NewsDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -84,14 +85,6 @@ export const NewsDetail: React.FC = () => {
       }, 1000);
     }
   }, [id]);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
 
   const handleGoBack = () => {
     navigationService.goBack();

@@ -4,9 +4,12 @@ import { ProfileHeader } from '../../components/common/header/ProfileHeader';
 import { ProfileTabs } from '../../pages/profile/ProfileTabs';
 import { InformationTab } from './InformationTab';
 import { SettingTab } from './SettingTab';
-import { ShelterPostTab } from './ShelterPostTab';
+import { PostTab } from './PostTab';
 import { AnimalTab } from './AnimalTab'; // Import AnimalTab
 import { Animal } from '../../types/Animal'; // Import Animal type
+import { AdoptionTab } from './AdoptionTab';
+import { AdoptionResponse } from '../../types/Adoption';
+import { ShelterTab } from './ShelterTab';
 
 export const Profile: React.FC = () => {
     const [activeTab, setActiveTab] = useState<string>('profile');
@@ -70,15 +73,41 @@ export const Profile: React.FC = () => {
         console.log('Delete animal:', animalId);
     };
 
+    const handleViewAdoptionDetail = (adoption: AdoptionResponse) => {
+        console.log('View adoption detail:', adoption);
+    };
+
+    const handleAdoptionStatusUpdate = (adoptionId: string, status: 'APPROVE' | 'REJECT') => {
+        console.log('Adoption status updated:', adoptionId, status);
+    };
+
+    const handleShelterUpdate = async (shelterData: any) => {
+        try {
+            // Call your API to update shelter information
+            console.log('Updating shelter:', shelterData);
+            // You can add API call here when available
+            // await shelterApi.update(shelterData);
+
+            alert('Shelter information updated successfully!');
+        } catch (error) {
+            console.error('Failed to update shelter:', error);
+            alert('Failed to update shelter information. Please try again.');
+        }
+    };
+
     const renderTabContent = () => {
         switch (activeTab) {
             case 'profile':
                 return <InformationTab user={user} onInformationUpdate={handleProfileUpdate} />;
             case 'settings':
                 return <SettingTab onPasswordChange={handlePasswordChange} />;
+            case 'shelter':
+                return <ShelterTab onShelterUpdate={handleShelterUpdate} />;
+            case 'adoptions':
+                return <AdoptionTab onViewDetail={handleViewAdoptionDetail} onStatusUpdate={handleAdoptionStatusUpdate} />;
             case 'posts':
                 return user.role === 'SHELTER' ? (
-                    <ShelterPostTab
+                    <PostTab
                         onViewDetail={handleViewPostDetail}
                         onPostUp={handlePostUp}
                         onDeletePost={handleDeletePost}

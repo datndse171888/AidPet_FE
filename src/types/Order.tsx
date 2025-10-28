@@ -26,8 +26,6 @@ export interface OrderDetail {
 
 export interface OrderRequest {
     userId: string;
-    shippingAddress: string;
-    paymentMethod: string;
     orderDetails: OrderDetailItem[];
 }
 
@@ -54,4 +52,8 @@ export interface OrderDetailResponse {
     price: number;
     quantity: number;
     subTotal: number;
+}
+
+export interface OrderUpdateStatusRequest{
+    statusOrder: paymentStatus;
 }

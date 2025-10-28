@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Heart, Clock } from 'lucide-react';
-import { AnimalResponse, AnimalUpdateStatusRequest } from '../../types/Animal';
+import { Animal, AnimalResponse, AnimalUpdateStatusRequest } from '../../types/Animal';
 import { AdminAnimalCard } from '../../components/ui/card/AdminAnimalCard';
 import { AnimalDetailModal } from '../../components/ui/modal/AnimalDetailModal';
 import { animalApi } from '../../services/api/AnimalApi';
@@ -31,9 +31,9 @@ export const AnimalManager: React.FC = () => {
     setIsLoading(true);
     try {
       // Replace with actual API call
-      const response = await animalApi.getByStatus();
+      const response = await animalApi.getByStatus(100, 0);
       const data = response.data;
-      setAnimals(data.listData || []);
+      setAnimals(data.listData);
     } catch (error) {
       console.error('Failed to fetch animals:', error);
       setAnimals([]);

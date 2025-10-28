@@ -1,4 +1,5 @@
-import { LoginFormData, AccountResponse, RegisterFormData, VerifyTokenRequest, ForgotPasswordRequest, ResetPasswordRequest, ChangePasswordRequest } from "../../types/User";
+import { LoginFormData, AccountResponse, RegisterFormData, VerifyTokenRequest, ForgotPasswordRequest, ResetPasswordRequest, ChangePasswordRequest, AccountUpdateRequest } from "../../types/User";
+import { DataResponse } from "../../types/DataResponse";
 import { api } from "../../utils/Axios";
 
 // Auth API methods
@@ -45,6 +46,69 @@ export const authApi = {
   resetPassword: (data: ResetPasswordRequest, token: string) => {
     return api.post('/users/reset-password', data, { headers: { Authorization: `Bearer ${token}` } });
   },
+
+  // Get all users (admin only)
+  getAllUsers: (page: number = 0, size: number = 10) => {
+    return api.get<DataResponse<AccountResponse>>(`/users/account?page=${page}&size=${size}`);
+  },
+
+  // Search users by name (admin only)
+  searchUsers: (name: string, page: number = 0, size: number = 10) => {
+    return api.get<DataResponse<AccountResponse>>(`/users/search?name=${name}&page=${page}&size=${size}`);
+  },
+
+  // Update user account (admin only)
+  updateUser: (userId: string, userData: AccountUpdateRequest) => {
+    return api.put<AccountResponse>(`/users/account/${userId}`, userData);
+  },
+
+  // Delete user (admin only)
+  deleteUser: (userId: string) => {
+    return api.delete(`/users/${userId}`);
+  },
+
+  // Get user by email
+  getUserByEmail: (email: string) => {
+    return api.get<AccountResponse>(`/users/getEmail?email=${email}`);
+  },
+
+  // Update profile
+  updateProfile: (userId: string, userData: AccountUpdateRequest) => {
+    return api.put<AccountResponse>(`/users/account/${userId}`, userData);
+  },
+
+  // Get user statistics (admin only)
+  getUserStats: () => {
+    return api.get<{
+      totalUsers: number;
+      activeUsers: number;
+      newUsersToday: number;
+      usersByRole: {
+        USER: number;
+        ADMIN: number;
+        SHELTER: number;
+        SPONSOR: number;
+      };
+    }>('/users/stats');
+  },
+
+  // Get users by role (admin only)
+  getUsersByRole: (role: 'USER' | 'ADMIN' | 'SHELTER' | 'SPONSOR', page: number = 0, size: number = 10) => {
+    return api.get<DataResponse<AccountResponse>>(`/users/role/${role}?page=${page}&size=${size}`);
+  },
+
+  // Activate/Deactivate user (admin only)
+  updateUserStatus: (userId: string, isActive: boolean) => {
+    return api.put<AccountResponse>(`/users/${userId}/status`, { isActive });
+  },
+
+  // Bulk update user status (admin only)
+  bulkUpdateUserStatus: (userIds: string[], isActive: boolean) => {
+    return api.put<{ success: number; failed: number }>('/users/bulk-status', {
+      userIds,
+      isActive
+    });
+  }
 };
 
 // Export the configured instance as default

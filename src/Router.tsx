@@ -23,7 +23,10 @@ import { AdminProfile } from './pages/admin/AdminProfile'
 import { AdminSetting } from './pages/admin/AdminSetting'
 import { AnimalManager } from './pages/admin/AnimalManager'
 import { Animal } from './pages/public/Animal'
+import { AccountManager } from './pages/admin/AccountManager'
 import { Product } from './pages/public/Product'
+import { Success } from './pages/payment/Success'
+import { Fail } from './pages/payment/Fail'
 
 export const Router: React.FC = () => {
     return (
@@ -57,6 +60,7 @@ export const Router: React.FC = () => {
                             <Route path='dashboard' element={<Dashboard />} />
                             <Route path='posts' element={<PostManager />} />
                             <Route path='animals' element={<AnimalManager />} />
+                            <Route path='accounts' element={<AccountManager />} />
                             <Route path='profile' element={<AdminProfile />} />
                             <Route path='settings' element={<AdminSetting />} />
                         </Route>
@@ -73,6 +77,10 @@ export const Router: React.FC = () => {
 
                         {/* Error Routes */}
                         <Route path='/unauthorized' element={<Unauthorized />} />
+
+                        {/* Payment */}
+                        <Route path='/payment/success' element={< Success />} />
+                        <Route path='/payment/fail' element={< Fail />} />
                     </Route>
 
                     <Route path='*' element={<Notfound />} />

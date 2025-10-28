@@ -71,7 +71,7 @@ export const AdminPostCard: React.FC<AdminPostCardProps> = ({
           <div className="flex items-center text-sm text-gray-500 space-x-4">
             <div className="flex items-center">
               <Tag className="h-4 w-4 mr-1" />
-              <span>{post.categoryBlog.name}</span>
+              <span>{(post as any).categoryBlog?.name ?? (post as any).category_name ?? 'Unknown'}</span>
             </div>
             <div className="flex items-center">
               <User className="h-4 w-4 mr-1" />

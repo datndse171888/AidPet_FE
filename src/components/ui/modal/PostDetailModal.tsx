@@ -84,6 +84,8 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                             <button
                                 onClick={onClose}
                                 className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 group"
+                                aria-label="Close post detail"
+                                title="Close"
                             >
                                 <X className="h-6 w-6 text-gray-400 group-hover:text-gray-600" />
                             </button>
@@ -114,7 +116,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-xl">
                                 <div className="text-center">
                                     <div className="text-sm font-medium text-gray-500">Category</div>
-                                    <div className="text-lg font-semibold text-gray-900">{post.categoryBlog.name}</div>
+                                    <div className="text-lg font-semibold text-gray-900">{(post as any).categoryBlog?.name ?? (post as any).category_name ?? 'Unknown'}</div>
                                 </div>
                                 <div className="text-center">
                                     <div className="text-sm font-medium text-gray-500">Author</div>
@@ -123,11 +125,11 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                                 <div className="text-center">
                                     <div className="text-sm font-medium text-gray-500">Published</div>
                                     <div className="text-lg font-semibold text-gray-900">
-                                        {new Date(post.stamp).toLocaleDateString('en-US', {
+                                        {post.stamp ? new Date(post.stamp).toLocaleDateString('en-US', {
                                             year: 'numeric',
                                             month: 'short',
                                             day: 'numeric'
-                                        })}
+                                        }) : '—'}
                                     </div>
                                 </div>
                                 <div className="text-center">
