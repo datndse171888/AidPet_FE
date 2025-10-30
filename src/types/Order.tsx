@@ -40,7 +40,6 @@ export interface OrderResponse {
     orderDateTime: string;
     totalAmount: number;
     status: status;
-    shippingAddress: string;
     paymentStatus: paymentStatus;
     orderDetails: OrderDetailResponse[];
     paymentUrl: string;

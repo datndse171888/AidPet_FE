@@ -10,6 +10,8 @@ import { Animal } from '../../types/Animal'; // Import Animal type
 import { AdoptionTab } from './AdoptionTab';
 import { AdoptionResponse } from '../../types/Adoption';
 import { ShelterTab } from './ShelterTab';
+import { OrderTab } from './OrderTab';
+import { OrderResponse } from '../../types/Order';
 
 export const Profile: React.FC = () => {
     const [activeTab, setActiveTab] = useState<string>('profile');
@@ -95,10 +97,17 @@ export const Profile: React.FC = () => {
         }
     };
 
+    const handleViewOrderDetail = (order: OrderResponse) => {
+        console.log('View order detail:', order);
+        // You can implement order detail modal here
+    };
+
     const renderTabContent = () => {
         switch (activeTab) {
             case 'profile':
                 return <InformationTab user={user} onInformationUpdate={handleProfileUpdate} />;
+            case 'orders': // ✅ Add orders case
+                return <OrderTab />;
             case 'settings':
                 return <SettingTab onPasswordChange={handlePasswordChange} />;
             case 'shelter':

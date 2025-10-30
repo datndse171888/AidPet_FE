@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Settings, Newspaper, Heart, FileText, Building } from 'lucide-react';
+import { User, Settings, Newspaper, Heart, FileText, Building, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../../hooks/AuthorizationRoute';
 
 interface Tab {
@@ -18,6 +18,7 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({ activeTab, onTabChange
 
   const baseTabs: Tab[] = [
     { id: 'profile', label: 'Profile', icon: User },
+    { id: 'orders', label: 'Orders', icon: ShoppingBag },
     { id: 'adoptions', label: 'Adoptions', icon: FileText },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
@@ -29,8 +30,8 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({ activeTab, onTabChange
       { id: 'shelter', label: 'Shelter', icon: Building },
       { id: 'posts', label: 'Posts', icon: Newspaper },
       { id: 'animals', label: 'Animals', icon: Heart }, // Thêm Animals tab
-      baseTabs[1],
-      baseTabs[2] // Settings tab
+      baseTabs[2],
+      baseTabs[3] // Settings tab
     ]
     : baseTabs;
 

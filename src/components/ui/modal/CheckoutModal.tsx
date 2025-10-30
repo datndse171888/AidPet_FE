@@ -59,9 +59,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         return sum + (product ? product.price * item.quantity : 0);
     }, 0);
 
-    const shippingCost = subtotal > 100 ? 0 : 10; // Free shipping over $100
     const tax = subtotal * 0.08; // 8% tax
-    const total = subtotal + shippingCost + tax;
+    const total = subtotal + tax;
 
     // Handle form submission
     const handleSubmit = (e: React.FormEvent) => {
@@ -144,10 +143,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                                 <div className="flex justify-between text-sm">
                                                     <span>Subtotal:</span>
                                                     <span>${subtotal.toFixed(2)}</span>
-                                                </div>
-                                                <div className="flex justify-between text-sm">
-                                                    <span>Shipping:</span>
-                                                    <span>{shippingCost === 0 ? 'Free' : `$${shippingCost.toFixed(2)}`}</span>
                                                 </div>
                                                 <div className="flex justify-between text-sm">
                                                     <span>Tax:</span>
