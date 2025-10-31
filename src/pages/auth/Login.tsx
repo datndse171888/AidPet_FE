@@ -3,16 +3,18 @@ import { Lock, PawPrint, CircleUserRound } from 'lucide-react';
 import { Input } from '../../components/ui/input/Input';
 import { Button } from '../../components/ui/Button';
 import { FormErrors } from '../../types';
-import { LoginFormData } from '../../types/User';
+import { AccountResponse, LoginFormData } from '../../types/User';
 import { authApi } from '../../services/api/AuthApi';
 import { navigationService } from '../../utils/NavigationService';
+import { shelterApi } from '../../services/api';
+import { ShelterResponse } from '../../types/Shelter';
 
 export const Login: React.FC = () => {
   const [formData, setFormData] = useState<LoginFormData>({
     userName: '',
     password: ''
   });
-  
+
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -40,12 +42,18 @@ export const Login: React.FC = () => {
     try {
       // Simulate API call
       const response = await authApi.login(formData);
-      const userData = response.data;
+      const userData: AccountResponse = response.data;
       localStorage.setItem('user', JSON.stringify(userData));
 
-      // console.log('Logging in with:', response.data.token);
-      // On success, redirect or show success message
-      // alert('Login successful!');
+      if (userData.role === 'SHELTER') {
+        const shelterResponse = await shelterApi.getShelterByUserId(userData.uuid);
+        if (shelterResponse.status === 200) {
+          const shelterData: ShelterResponse = shelterResponse.data;
+          localStorage.setItem('shelter', JSON.stringify(shelterData));
+        } else {
+          localStorage.removeItem('user');
+        }
+      }
 
       // Redirect based on role
       if (userData.role === 'ADMIN') {
@@ -53,7 +61,7 @@ export const Login: React.FC = () => {
       } else {
         navigationService.goTo('/');
       }
-      
+
     } catch (error) {
       setErrors({ general: 'Login failed. Please try again.' });
     } finally {

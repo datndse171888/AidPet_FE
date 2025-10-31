@@ -4,6 +4,7 @@ import { OrderResponse } from '../../types/Order';
 import { OrderAccordion } from '../../components/ui/accordion/OrderAccordion';
 import { useAuth } from '../../hooks/AuthorizationRoute';
 import { orderApi } from '../../services/api/OrderApi';
+import { formatPrice } from '../../utils/FormatUtil';
 
 export const OrderTab: React.FC = () => {
   const [orders, setOrders] = useState<OrderResponse[]>([]);
@@ -80,13 +81,6 @@ export const OrderTab: React.FC = () => {
     { value: 'CANCELLED', label: 'Payment Cancelled' }
   ];
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -126,7 +120,7 @@ export const OrderTab: React.FC = () => {
           <div className="text-sm text-gray-600">Paid Orders</div>
         </div>
         <div className="bg-white p-4 rounded-lg border border-gray-200">
-          <div className="text-lg font-bold text-purple-600">{formatCurrency(stats.totalAmount)}</div>
+          <div className="text-lg font-bold text-purple-600">{formatPrice(stats.totalAmount)}</div>
           <div className="text-sm text-gray-600">Total Spent</div>
         </div>
       </div>

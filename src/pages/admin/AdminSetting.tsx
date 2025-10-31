@@ -51,7 +51,7 @@ export const AdminSetting: React.FC<AdminSettingProps> = ({ onPasswordChange }) 
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validatePasswordForm()) {
       return;
     }
@@ -108,7 +108,7 @@ export const AdminSetting: React.FC<AdminSettingProps> = ({ onPasswordChange }) 
 
         {/* Change Password Section */}
         <div className="border border-gray-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between">
             <div>
               <h3 className="font-semibold text-gray-900">Admin Password</h3>
               <p className="text-sm text-gray-500">Update your administrator account password</p>
@@ -172,7 +172,7 @@ export const AdminSetting: React.FC<AdminSettingProps> = ({ onPasswordChange }) 
       </div>
 
       {/* System Preferences */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+      {/* <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
         <div className="flex items-center mb-6">
           <Globe className="h-6 w-6 text-orange-600 mr-3" />
           <h2 className="text-lg font-semibold text-gray-900">System Preferences</h2>
@@ -214,17 +214,17 @@ export const AdminSetting: React.FC<AdminSettingProps> = ({ onPasswordChange }) 
             />
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Data Management */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+      {/* <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
         <div className="flex items-center mb-6">
           <Database className="h-6 w-6 text-orange-600 mr-3" />
           <h2 className="text-lg font-semibold text-gray-900">Data Management</h2>
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between border border-gray-200 rounded-lg p-4">
             <div>
               <p className="font-medium">Export System Data</p>
               <p className="text-sm text-gray-500">Download system reports and analytics</p>
@@ -234,7 +234,7 @@ export const AdminSetting: React.FC<AdminSettingProps> = ({ onPasswordChange }) 
             </Button>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between border border-gray-200 rounded-lg p-4">
             <div>
               <p className="font-medium">Clear Cache</p>
               <p className="text-sm text-gray-500">Clear system cache to improve performance</p>
@@ -244,7 +244,7 @@ export const AdminSetting: React.FC<AdminSettingProps> = ({ onPasswordChange }) 
             </Button>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Account Actions */}
       <div className="bg-white rounded-lg shadow-md border border-red-200 p-6">
@@ -265,6 +265,16 @@ export const AdminSetting: React.FC<AdminSettingProps> = ({ onPasswordChange }) 
             >
               <LogOut className="h-4 w-4 mr-2" />
               Log Out
+            </Button>
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
+            <div>
+              <p className="font-medium text-red-900">Delete Account</p>
+              <p className="text-sm text-red-600">Permanently delete your account and all data</p>
+            </div>
+            <Button variant="outline" size="sm">
+              Delete Account
             </Button>
           </div>
         </div>
