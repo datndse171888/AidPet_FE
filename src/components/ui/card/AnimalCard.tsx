@@ -108,7 +108,7 @@ export const AnimalCard: React.FC<AnimalCardProps> = ({
             onClick={() => onDelete(animal.animalUuid)}
             variant="outline"
             size="sm"
-            className="flex items-center justify-center text-red-600 hover:bg-red-50 border-red-300"
+            className="flex items-center justify-center text-red-600 hover:bg-red-500 border-red-300"
           >
             <Trash2 className="h-4 w-4" />
           </Button>

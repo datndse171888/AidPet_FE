@@ -51,7 +51,7 @@ export const SettingTab: React.FC<SettingTabProps> = ({ onPasswordChange }) => {
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validatePasswordForm()) {
       return;
     }
@@ -84,6 +84,7 @@ export const SettingTab: React.FC<SettingTabProps> = ({ onPasswordChange }) => {
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to log out?')) {
       localStorage.removeItem('user');
+      localStorage.removeItem('shelter');
       navigationService.goTo('/login');
     }
   };
@@ -94,7 +95,7 @@ export const SettingTab: React.FC<SettingTabProps> = ({ onPasswordChange }) => {
 
       {/* Change Password Section */}
       <div className="border border-gray-200 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-gray-900">Password</h3>
             <p className="text-sm text-gray-500">Update your account password</p>
@@ -156,7 +157,7 @@ export const SettingTab: React.FC<SettingTabProps> = ({ onPasswordChange }) => {
       </div>
 
       {/* Account Preferences */}
-      <div className="border border-gray-200 rounded-lg p-4">
+      {/* <div className="border border-gray-200 rounded-lg p-4">
         <h3 className="font-semibold text-gray-900 mb-4">Preferences</h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -181,7 +182,7 @@ export const SettingTab: React.FC<SettingTabProps> = ({ onPasswordChange }) => {
             />
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Account Actions */}
       <div className="border border-red-200 rounded-lg p-4">
@@ -201,7 +202,8 @@ export const SettingTab: React.FC<SettingTabProps> = ({ onPasswordChange }) => {
             </Button>
           </div>
 
-          <div className="flex items-center justify-between">
+
+          <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
             <div>
               <p className="font-medium text-red-900">Delete Account</p>
               <p className="text-sm text-red-600">Permanently delete your account and all data</p>
