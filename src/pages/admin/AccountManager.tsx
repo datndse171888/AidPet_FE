@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Search, CheckCircle2, Circle, ArrowUpDown } from 'lucide-react';
+import { Search, CheckCircle2, Circle, ArrowUpDown, Filter, KeyRound, LockOpen, LockKeyholeOpen, LockKeyhole, Ban, Lock } from 'lucide-react';
 import { adminUserApi } from '../../services/api/AdminUserApi';
 
 interface AdminUserSummary {
@@ -14,36 +14,37 @@ export const AccountManager: React.FC = () => {
   const [users, setUsers] = useState<AdminUserSummary[]>([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [roleFilter, setRoleFilter] = useState<string>('ALL');
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [sortBy, setSortBy] = useState<'name' | 'email' | 'role' | 'status'>('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        // Attempt to fetch; gracefully fallback to empty list
-        const res = await adminUserApi.getAllUsers?.(0, 50);
-        const list = (res?.data?.listData as AdminUserSummary[]) || [];
-        setUsers(list);
-      } catch (e) {
-        setUsers([]);
-      } finally {
-        setLoading(false);
-      }
-    };
     load();
   }, []);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      // Attempt to fetch; gracefully fallback to empty list
+      const res = await adminUserApi.getAllUsers?.(0, 50);
+      const list = (res?.data?.listData as AdminUserSummary[]) || [];
+      setUsers(list);
+    } catch (e) {
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filtered = useMemo(() => {
     let data = users.filter(u =>
       `${u.fullName} ${u.email} ${u.role}`.toLowerCase().includes(query.toLowerCase())
     );
-    if (roleFilter !== 'all') {
+    if (roleFilter !== 'ALL') {
       data = data.filter(u => u.role === roleFilter);
     }
-    if (statusFilter !== 'all') {
+    if (statusFilter !== 'ALL') {
       data = data.filter(u => u.status === statusFilter);
     }
     const dir = sortDir === 'asc' ? 1 : -1;
@@ -71,44 +72,57 @@ export const AccountManager: React.FC = () => {
         <p className="text-gray-600 mt-1">View and manage platform user accounts</p>
       </div>
 
+      {/* Search and Filters */}
       <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-        <div className="flex flex-col md:flex-row gap-4 items-center">
-          <div className="relative w-full md:max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name, email, or role"
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            />
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                type="text"
+                placeholder="Search by title, category, or author ID..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              />
+            </div>
           </div>
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <label className="text-sm text-gray-600">Role</label>
-            <select
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 text-sm"
-              aria-label="Filter by role"
-            >
-              <option value="all">All</option>
-              <option value="ADMIN">ADMIN</option>
-              <option value="SHELTER">SHELTER</option>
-              <option value="USER">USER</option>
-            </select>
+
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <KeyRound className="h-5 w-5 text-gray-400" />
+              <select
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value as 'ALL' | 'ADMIN' | 'SHELTER' | 'USER')}
+                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                aria-label="Filter posts by status"
+              >
+                <option value="ALL">All</option>
+                <option value="ADMIN">Admin</option>
+                <option value="SHELTER">Shelter</option>
+                <option value="USER">User</option>
+              </select>
+            </div>
           </div>
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <label className="text-sm text-gray-600">Status</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 text-sm"
-              aria-label="Filter by status"
-            >
-              <option value="all">All</option>
-              <option value="ACTIVE">ACTIVE</option>
-              <option value="INACTIVE">INACTIVE</option>
-              <option value="BANNED">BANNED</option>
-            </select>
+
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              {statusFilter === 'ALL' ? <LockOpen className="h-5 w-5 text-gray-400" /> :
+                statusFilter === 'ACTIVE' ? <LockKeyholeOpen className="h-5 w-5 text-green-500" /> :
+                  statusFilter === 'INACTIVE' ? <LockKeyhole className="h-5 w-5 text-gray-400" /> :
+                    <Lock className="h-5 w-5 text-red-500" />}
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as 'ALL' | 'ACTIVE' | 'INACTIVE' | 'BANNED')}
+                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                aria-label="Filter posts by status"
+              >
+                <option value="ALL">All</option>
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+                <option value="BANNED">Banned</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>

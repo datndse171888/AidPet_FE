@@ -4,5 +4,9 @@ import { api } from "../../utils/Axios";
 export const shelterApi = {
     createShelter: (shelterData: ShelterRequest) => {
         return api.post<ShelterResponse>('/shelter/create', shelterData);
+    },
+
+    getShelterByUserId: (userId: string) => {
+        return api.get<ShelterResponse>(`/shelter/user/${userId}`);
     }
 }
