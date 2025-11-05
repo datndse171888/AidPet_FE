@@ -8,6 +8,7 @@ export interface AdoptionRequest {
     shelterUuid: string;
     userId: string;
     animalUuid: string;
+    message: string;
 }
 
 export interface AdoptionResponse {
