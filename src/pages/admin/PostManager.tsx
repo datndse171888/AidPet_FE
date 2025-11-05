@@ -35,9 +35,9 @@ export const PostManager: React.FC = () => {
       setIsLoading(true);
       try {
         // Use API service with automatic fallback to mock data
-        // Prefer public list to avoid admin 500: GET /post
-        const response = await api.get<any[]>('post');
-        const raw = response.data || [];
+        // Use admin list now that admin API is available
+        const response = await adminPostApi.getAllPosts(0, 100);
+        const raw = (response.data as any).content || (response.data as any).listData || [];
         // Normalize backend shape (category_name) -> FE shape (categoryBlog.name)
         const list: Post[] = raw.map((p: any) => ({
           id: p.id,
@@ -136,7 +136,7 @@ export const PostManager: React.FC = () => {
       setApprovalPostId('');
     } catch (error) {
       console.error(`Failed to ${approvalAction} post:`, error);
-      // Handle error - show toast notification
+      alert(`Failed to ${approvalAction} post. Please ensure you are logged in as ADMIN.`);
     } finally {
       setApprovalLoading(false);
     }

@@ -64,7 +64,14 @@ export const adminDashboardApi = {
 
   // Get today's summary
   getTodaySummary: () => {
-    return api.get<any>('admin/dashboard/stats');
+    return api.get<{
+      activeUsers: number;
+      newPosts: number;
+      postsApproved: number;
+      pageViews: number;
+      newAnimals?: number;
+      newAdoptions?: number;
+    }>('admin/analytics/today-summary');
   },
 
   // Get quick stats for cards (map to analytics summary)
