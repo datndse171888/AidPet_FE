@@ -6,6 +6,7 @@ import { PostDetailModal } from '../../components/ui/modal/PostDetailModal';
 import { PostApprovalModal } from '../../components/ui/modal/PostApprovalModal';
 import { adminPostApi } from '../../services/api/AdminPostApi';
 import { postApi } from '../../services/api/PostApi';
+import { api } from '../../utils/Axios';
 import { categoryBlogApi, CategoryBlog, CategoryBlogRequest } from '../../services/api/CategoryBlogApi';
 
 export const PostManager: React.FC = () => {
@@ -34,10 +35,22 @@ export const PostManager: React.FC = () => {
       setIsLoading(true);
       try {
         // Use API service with automatic fallback to mock data
-                const response = await adminPostApi.getAllPosts(0, 100);
-                // Accept both shapes: { content: Post[] } or { listData: Post[] }
-                const list = (response.data as any).content || (response.data as any).listData || [];
-                setPosts(list);
+        // Prefer public list to avoid admin 500: GET /post
+        const response = await api.get<any[]>('post');
+        const raw = response.data || [];
+        // Normalize backend shape (category_name) -> FE shape (categoryBlog.name)
+        const list: Post[] = raw.map((p: any) => ({
+          id: p.id,
+          topic: p.topic,
+          htmlContent: p.htmlContent,
+          deltaContent: p.deltaContent,
+          stamp: p.stamp,
+          view: p.view ?? 0,
+          thumbnail: p.thumbnail,
+          author_id: p.author_id ?? '',
+          categoryBlog: p.categoryBlog ?? { id: p.category_id || '', name: p.category_name || '' }
+        }));
+        setPosts(list);
       } catch (error) {
         console.error('Failed to fetch posts:', error);
         setPosts([]);
@@ -70,9 +83,9 @@ export const PostManager: React.FC = () => {
   }, [showCreate, categories.length]);
 
   const filteredPosts = posts.filter(post => {
-    const matchesSearch = post.topic.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.categoryBlog.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.author_id.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (post.topic || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ((post.categoryBlog?.name || '')).toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ((post.author_id || '')).toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus = statusFilter === 'all' ||
       (statusFilter === 'approved' && post.view > 0) ||

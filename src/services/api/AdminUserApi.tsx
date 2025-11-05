@@ -84,7 +84,7 @@ export const adminUserApi = {
 
   // Get user statistics
   getUserStats: () => {
-    return api.get<UserStats>('/admin/users/stats');
+    return api.get<UserStats>('admin/users/stats');
   },
 
   // Get users by role
