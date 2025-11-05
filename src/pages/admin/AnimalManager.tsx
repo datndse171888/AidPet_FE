@@ -3,6 +3,7 @@ import { Search, Heart, Clock, Filter } from 'lucide-react';
 import { Animal, AnimalResponse, AnimalUpdateStatusRequest } from '../../types/Animal';
 import { AdminAnimalCard } from '../../components/ui/card/AdminAnimalCard';
 import { AnimalDetailModal } from '../../components/ui/modal/AnimalDetailModal';
+import { AnimalApprovalModal } from '../../components/ui/modal/AnimalApprovalModal';
 import { animalApi } from '../../services/api/AnimalApi';
 
 export const AnimalManager: React.FC = () => {
@@ -17,6 +18,9 @@ export const AnimalManager: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'AVAILABLE' | 'ADOPTED' | 'RESCUED' | 'PENDING' | 'REJECT'>('ALL');
   const [selectedAnimal, setSelectedAnimal] = useState<AnimalResponse | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [approvalAction, setApprovalAction] = useState<'approve' | 'reject'>('approve');
+  const [approvalLoading, setApprovalLoading] = useState(false);
 
   //========================
   // Effects
@@ -65,40 +69,37 @@ export const AnimalManager: React.FC = () => {
   };
 
   // Approve animal for adoption
-  const handleApprove = async (animalId: string) => {
-    if (window.confirm('Are you sure you want to approve this animal for adoption?')) {
-      try {
-        // Call API to update animal status to 'AVAILABLE'
-        const data: AnimalUpdateStatusRequest = { status: 'AVAILABLE', message: 'Approved by admin' };
-        const response = await animalApi.updateStatus(animalId, data);
-        const updatedAnimal: AnimalResponse = response.data;
-
-        await getPendingAnimals(); // Refresh the list after approval
-
-        console.table(updatedAnimal);
-      } catch (error) {
-        console.error('Failed to approve animal:', error);
-        return;
-      }
-      console.log('Approved animal:', animalId);
-    }
+  const handleApprove = (animalId: string) => {
+    const found = animals.find(a => a.animalUuid === animalId) || null;
+    setSelectedAnimal(found);
+    setApprovalAction('approve');
+    setShowApprovalModal(true);
   };
 
-  const handleReject = async (animalId: string) => {
-    if (window.confirm('Are you sure you want to reject this animal? This action cannot be undone.')) {
-      try {
-        // Call API to update animal status to 'AVAILABLE'
-        const data: AnimalUpdateStatusRequest = { status: 'REJECT', message: 'Rejected by admin' };
-        const response = await animalApi.updateStatus(animalId, data);
-        const updatedAnimal: AnimalResponse = response.data;
+  const handleReject = (animalId: string) => {
+    const found = animals.find(a => a.animalUuid === animalId) || null;
+    setSelectedAnimal(found);
+    setApprovalAction('reject');
+    setShowApprovalModal(true);
+  };
 
-        await getPendingAnimals(); // Refresh the list after rejection
-
-        console.table(updatedAnimal);
-      } catch (error) {
-        console.error('Failed to approve animal:', error);
-        return;
-      } console.log('Rejected animal:', animalId);
+  const handleApprovalConfirm = async (message: string) => {
+    if (!selectedAnimal) return;
+    setApprovalLoading(true);
+    try {
+      const status = approvalAction === 'approve' ? 'AVAILABLE' : 'REJECT';
+      const payload: AnimalUpdateStatusRequest = { status: status as any, message };
+      const res = await animalApi.updateStatus(selectedAnimal.animalUuid, payload);
+      const updated = res.data;
+      // Optimistic update
+      setAnimals(prev => prev.map(a => a.animalUuid === selectedAnimal.animalUuid ? { ...a, status: status as any } as any : a));
+      setShowApprovalModal(false);
+      // Background refresh
+      getAllAnimals();
+    } catch (e) {
+      console.error(`Failed to ${approvalAction} animal`, e);
+    } finally {
+      setApprovalLoading(false);
     }
   };
 
@@ -235,6 +236,15 @@ export const AnimalManager: React.FC = () => {
         onClose={handleCloseModal}
         onSave={async () => { }} // Admin không cần edit
         showActions={false} // Admin chỉ xem, không edit
+      />
+
+      <AnimalApprovalModal
+        isOpen={showApprovalModal}
+        onClose={() => setShowApprovalModal(false)}
+        onConfirm={handleApprovalConfirm}
+        action={approvalAction}
+        animalName={selectedAnimal?.name || ''}
+        isLoading={approvalLoading}
       />
     </div>
   );
