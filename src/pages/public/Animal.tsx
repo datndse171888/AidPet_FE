@@ -11,6 +11,7 @@ import { navigationService } from '../../utils/NavigationService';
 import { AdoptionRequest } from '../../types/Adoption';
 import { CategoryAnimalResponse } from '../../types/Category';
 import { categoryApi } from '../../services/api/CategoryApi';
+import { AdoptionMessageModal } from '../../components/ui/modal/AdoptionMessageModal';
 
 export const Animal: React.FC = () => {
 
@@ -26,12 +27,14 @@ export const Animal: React.FC = () => {
 
   // Modal states
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showAdoptionModal, setShowAdoptionModal] = useState(false);
   const [selectedAnimal, setSelectedAnimal] = useState<AnimalResponse | null>(null);
 
   const user = useAuth();
 
   // Categories for filter
   const [categories, setCategories] = useState<CategoryAnimalResponse[]>([]);
+
 
   //=====================
   // Effects
@@ -69,6 +72,7 @@ export const Animal: React.FC = () => {
     }
   };
 
+
   //=====================
   // Filter
   //=====================
@@ -84,6 +88,7 @@ export const Animal: React.FC = () => {
 
     return matchesSearch && matchesCategory;
   });
+
 
   //=====================
   // Handlers
@@ -107,31 +112,44 @@ export const Animal: React.FC = () => {
       return;
     }
 
-    // Confirm adoption intent
-    const confirmAdopt = window.confirm(
-      `Are you sure you want to submit an adoption request for ${animal.name}?`
-    );
-    
-    if (!confirmAdopt) {
-      return;
-    }
+    // Open adoption message modal
+    setSelectedAnimal(animal);
+    setShowAdoptionModal(true);
+  };
+
+  const handleCloseAdoptionModal = () => {
+    setShowAdoptionModal(false);
+    setSelectedAnimal(null);
+  };
+
+  const handleSubmitAdoption = async (message: string) => {
+    if (!selectedAnimal || !user?.uuid) return;
 
     setIsSubmittingAdoption(true);
 
-    const formData :AdoptionRequest = {
-      shelterUuid: animal.shelter.shelterUuid,
-      userId: user?.uuid || '',
-      animalUuid: animal.animalUuid
+    const formData: AdoptionRequest = {
+      shelterUuid: selectedAnimal.shelter.shelterUuid,
+      userId: user.uuid,
+      animalUuid: selectedAnimal.animalUuid,
+      message: message // ✅ Include message in request
     };
 
     try {
-      const response = await adoptionApi.create(formData)
+      const response = await adoptionApi.create(formData);
       const data = response.data;
       console.log('Adoption request submitted:', data);
+
+      // Show success message
+      alert(`Adoption request for ${selectedAnimal.name} has been submitted successfully! The shelter will review your request and contact you soon.`);
+
+      // Close modal and refresh data
+      handleCloseAdoptionModal();
+      getAllAvailableAnimals();
+
     } catch (error) {
       console.error('Failed to submit adoption request:', error);
+      alert('Failed to submit adoption request. Please try again.');
     } finally {
-      getAllAvailableAnimals();
       setIsSubmittingAdoption(false);
     }
   };
@@ -276,6 +294,14 @@ export const Animal: React.FC = () => {
             onClose={handleCloseModal}
             onSave={async () => { }} // Users cannot edit
             showActions={false} // Users only view
+          />
+
+          <AdoptionMessageModal
+            isOpen={showAdoptionModal}
+            animal={selectedAnimal}
+            onClose={handleCloseAdoptionModal}
+            onSubmit={handleSubmitAdoption}
+            isLoading={isSubmittingAdoption}
           />
         </div>
       </section>
