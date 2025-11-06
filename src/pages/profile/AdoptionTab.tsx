@@ -11,6 +11,7 @@ import { adoptionApi } from '../../services/api/AdoptionApi';
 import { animalApi } from '../../services/api/AnimalApi';
 import { shelterApi } from '../../services/api/ShelterApi';
 import { authApi } from '../../services/api';
+import { DataResponse } from '../../types/DataResponse';
 
 interface AdoptionTabProps {
   onViewDetail?: (adoption: AdoptionResponse) => void;
@@ -40,6 +41,8 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
   const userRole = user?.role as 'SHELTER' | 'USER';
 
   useEffect(() => {
+    // console.log(user);
+    
     if (user?.uuid) {
       getAdoptions();
     }
@@ -51,20 +54,22 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
     setIsLoading(true);
     try {
       let response;
-      
-      if (userRole === 'SHELTER') {
-        // Get adoptions for shelter
-        // response = await adoptionApi.getByShelter(user.uuid);
-      } else {
-        // Get adoptions for user
-        // response = await adoptionApi.getByUser(user.uuid);
+
+      // if (userRole === 'SHELTER') {
+      //   // Get adoptions for shelter
+      //   // response = await adoptionApi.getByShelter(user.uuid);
+      // } else {
+      // Get adoptions for user
+      response = await adoptionApi.getByUser(user.uuid);
+      // }
+
+      const adoptionData: DataResponse<AdoptionResponse> = response.data;
+      if (adoptionData && adoptionData.listData) {
+        setAdoptions(adoptionData.listData);
       }
-      
-    //   const adoptionData = response.data.listData || [];
-    //   setAdoptions(adoptionData);
 
       // Fetch related data
-    //   await fetchRelatedData(adoptionData);
+      //   await fetchRelatedData(adoptionData);
 
     } catch (error) {
       console.error('Failed to fetch adoptions:', error);
@@ -98,29 +103,29 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
     });
 
     // Fetch users (for shelter view)
-    const userPromises = userRole === 'SHELTER' 
+    const userPromises = userRole === 'SHELTER'
       ? Array.from(userIds).map(async (id) => {
-          try {
-        //     const response = await authApi.getById(id);
-        //     return { id, data: response.data };
-          } catch (error) {
-            console.error(`Failed to fetch user ${id}:`, error);
-            return null;
-          }
-        })
+        try {
+          //     const response = await authApi.getById(id);
+          //     return { id, data: response.data };
+        } catch (error) {
+          console.error(`Failed to fetch user ${id}:`, error);
+          return null;
+        }
+      })
       : [];
 
     // Fetch shelters (for user view)
     const shelterPromises = userRole === 'USER'
       ? Array.from(shelterIds).map(async (id) => {
-          try {
-            // const response = await shelterApi.getById(id);
-            // return { id, data: response.data };
-          } catch (error) {
-            console.error(`Failed to fetch shelter ${id}:`, error);
-            return null;
-          }
-        })
+        try {
+          // const response = await shelterApi.getById(id);
+          // return { id, data: response.data };
+        } catch (error) {
+          console.error(`Failed to fetch shelter ${id}:`, error);
+          return null;
+        }
+      })
       : [];
 
     // Wait for all promises
@@ -140,11 +145,11 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
     });
 
     userResults.forEach(result => {
-    //   if (result) userMap[result.id] = result.data;
+      //   if (result) userMap[result.id] = result.data;
     });
 
     shelterResults.forEach(result => {
-    //   if (result) shelterMap[result.id] = result.data;
+      //   if (result) shelterMap[result.id] = result.data;
     });
 
     setAnimals(animalMap);
@@ -157,7 +162,7 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
     const adoptionUser = users[adoption.userId];
     const shelter = shelters[adoption.shelterUuid];
 
-    const matchesSearch = 
+    const matchesSearch =
       animal?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       animal?.breed.toLowerCase().includes(searchQuery.toLowerCase()) ||
       adoptionUser?.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -187,7 +192,7 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
       try {
         const updateData: AdoptionStatusUpdateRequest = { status: 'APPROVE' };
         // await adoptionApi.updateStatus(adoptionId, updateData);
-        
+
         // Update local state
         setAdoptions(prev =>
           prev.map(adoption =>
@@ -202,7 +207,7 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
         }
 
         alert('Adoption request approved successfully!');
-        
+
       } catch (error) {
         console.error('Failed to approve adoption:', error);
         alert('Failed to approve adoption request. Please try again.');
@@ -218,7 +223,7 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
       try {
         const updateData: AdoptionStatusUpdateRequest = { status: 'REJECT' };
         // await adoptionApi.updateStatus(adoptionId, updateData);
-        
+
         // Update local state
         setAdoptions(prev =>
           prev.map(adoption =>
@@ -233,7 +238,7 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
         }
 
         alert('Adoption request rejected successfully!');
-        
+
       } catch (error) {
         console.error('Failed to reject adoption:', error);
         alert('Failed to reject adoption request. Please try again.');
@@ -268,7 +273,7 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
             {userRole === 'SHELTER' ? 'Adoption Requests' : 'My Adoption Applications'}
           </h2>
           <p className="text-sm text-gray-600 mt-1">
-            {userRole === 'SHELTER' 
+            {userRole === 'SHELTER'
               ? 'Review and manage adoption requests for your animals'
               : 'Track the status of your pet adoption applications'
             }
@@ -357,7 +362,7 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
           <div className="text-gray-500 mb-4">
             {searchQuery || statusFilter !== 'all'
               ? 'No adoption requests found matching your criteria'
-              : userRole === 'SHELTER' 
+              : userRole === 'SHELTER'
                 ? 'No adoption requests received yet'
                 : 'No adoption applications submitted yet'
             }
