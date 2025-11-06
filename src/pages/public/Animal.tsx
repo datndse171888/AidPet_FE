@@ -129,7 +129,6 @@ export const Animal: React.FC = () => {
 
     const formData: AdoptionRequest = {
       shelterUuid: selectedAnimal.shelter.shelterUuid,
-      userId: user.uuid,
       animalUuid: selectedAnimal.animalUuid,
       message: message // ✅ Include message in request
     };
