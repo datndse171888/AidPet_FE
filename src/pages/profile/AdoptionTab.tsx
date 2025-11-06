@@ -60,7 +60,7 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
 
       if (userRole === 'SHELTER') {
         // Get adoptions for shelter
-        response = await adoptionApi.getByShelter(user.uuid);
+        response = await adoptionApi.getByShelter();
       } else {
       // Get adoptions for user
       response = await adoptionApi.getByUser(user.uuid);

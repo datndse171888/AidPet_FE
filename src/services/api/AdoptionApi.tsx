@@ -11,11 +11,11 @@ export const adoptionApi = {
         return api.get<DataResponse<AdoptionResponse>>('/adoption', { params: { page, size } });
     },
 
-    getByUser: (userId: string) => {
-        return api.get<DataResponse<AdoptionResponse>>(`/adoption/user/${userId}`);
+    getByUser: (userId: string, page: number = 0, size: number = 100) => {
+        return api.get<DataResponse<AdoptionResponse>>(`/adoption/user/${userId}?page=${page}&size=${size}`);
     },
 
-    getByShelter: () => {
-        return api.get<DataResponse<AdoptionResponse>>(`/adoption/shelter`);
+    getByShelter: (page: number = 0, size: number = 100) => {
+        return api.get<DataResponse<AdoptionResponse>>(`/adoption/shelter?page=${page}&size=${size}`);
     }
 }
