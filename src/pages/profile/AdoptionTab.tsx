@@ -58,10 +58,13 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
     try {
       let response;
 
-      // Lấy tất cả adoption (dành cho admin/shelter/user tùy UI lọc phía client)
-      console.log('[AdoptionTab] Fetching all adoptions via adoptionApi.getAll()');
-      response = await adoptionApi.getAll();
-      console.log('[AdoptionTab] API /api/adoption raw response:', response?.data);
+      if (userRole === 'SHELTER') {
+        // Get adoptions for shelter
+        response = await adoptionApi.getByShelter(user.uuid);
+      } else {
+      // Get adoptions for user
+      response = await adoptionApi.getByUser(user.uuid);
+      }
 
       const adoptionData: DataResponse<AdoptionResponse> = response.data;
       if (adoptionData && adoptionData.listData) {

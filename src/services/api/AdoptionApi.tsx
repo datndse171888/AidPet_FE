@@ -13,5 +13,9 @@ export const adoptionApi = {
 
     getByUser: (userId: string) => {
         return api.get<DataResponse<AdoptionResponse>>(`/adoption/user/${userId}`);
+    },
+
+    getByShelter: () => {
+        return api.get<DataResponse<AdoptionResponse>>(`/adoption/shelter`);
     }
 }
