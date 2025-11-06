@@ -7,6 +7,10 @@ export const adoptionApi = {
         return api.post<AdoptionResponse>('/adoption', data);
     },
 
+    getAll: (page: number = 0, size: number = 10) => {
+        return api.get<DataResponse<AdoptionResponse>>('/adoption', { params: { page, size } });
+    },
+
     getByUser: (userId: string) => {
         return api.get<DataResponse<AdoptionResponse>>(`/adoption/user/${userId}`);
     }

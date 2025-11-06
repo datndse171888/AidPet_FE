@@ -44,7 +44,10 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
     // console.log(user);
     
     if (user?.uuid) {
+      console.log('[AdoptionTab] useEffect triggered with user', { uuid: user.uuid, role: userRole });
       getAdoptions();
+    } else {
+      console.log('[AdoptionTab] No user uuid, skip fetching');
     }
   }, [user?.uuid, userRole]);
 
@@ -55,17 +58,23 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
     try {
       let response;
 
-      // if (userRole === 'SHELTER') {
-      //   // Get adoptions for shelter
-      //   // response = await adoptionApi.getByShelter(user.uuid);
-      // } else {
-      // Get adoptions for user
-      response = await adoptionApi.getByUser(user.uuid);
-      // }
+      // Lấy tất cả adoption (dành cho admin/shelter/user tùy UI lọc phía client)
+      console.log('[AdoptionTab] Fetching all adoptions via adoptionApi.getAll()');
+      response = await adoptionApi.getAll();
+      console.log('[AdoptionTab] API /api/adoption raw response:', response?.data);
 
       const adoptionData: DataResponse<AdoptionResponse> = response.data;
       if (adoptionData && adoptionData.listData) {
+        console.log('[AdoptionTab] Parsed listData length:', adoptionData.listData.length);
         setAdoptions(adoptionData.listData);
+        // load related data for cards
+        try {
+          await fetchRelatedData(adoptionData.listData);
+        } catch (e) {
+          console.warn('[AdoptionTab] fetchRelatedData failed', e);
+        }
+      } else {
+        console.log('[AdoptionTab] listData is empty or undefined', adoptionData);
       }
 
       // Fetch related data
@@ -75,6 +84,7 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
       console.error('Failed to fetch adoptions:', error);
       setAdoptions([]);
     } finally {
+      console.log('[AdoptionTab] getAdoptions finished');
       setIsLoading(false);
     }
   };
@@ -102,18 +112,16 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
       }
     });
 
-    // Fetch users (for shelter view)
-    const userPromises = userRole === 'SHELTER'
-      ? Array.from(userIds).map(async (id) => {
-        try {
-          //     const response = await authApi.getById(id);
-          //     return { id, data: response.data };
-        } catch (error) {
-          console.error(`Failed to fetch user ${id}:`, error);
-          return null;
-        }
-      })
-      : [];
+    // Fetch users (needed for shelter view to show applicant name)
+    const userPromises = Array.from(userIds).map(async (id) => {
+      try {
+        const response = await authApi.getProfile(id);
+        return { id, data: response.data };
+      } catch (error) {
+        console.error(`Failed to fetch user ${id}:`, error);
+        return null;
+      }
+    });
 
     // Fetch shelters (for user view)
     const shelterPromises = userRole === 'USER'
@@ -145,7 +153,7 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
     });
 
     userResults.forEach(result => {
-      //   if (result) userMap[result.id] = result.data;
+      if (result) userMap[result.id] = result.data as unknown as AccountResponse;
     });
 
     shelterResults.forEach(result => {
@@ -162,16 +170,27 @@ export const AdoptionTab: React.FC<AdoptionTabProps> = ({
     const adoptionUser = users[adoption.userId];
     const shelter = shelters[adoption.shelterUuid];
 
+    const query = (searchQuery || '').toLowerCase();
     const matchesSearch =
-      animal?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      animal?.breed.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      adoptionUser?.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      shelter?.shelterName.toLowerCase().includes(searchQuery.toLowerCase());
+      ((animal?.name || '').toLowerCase().includes(query)) ||
+      ((animal?.breed || '').toLowerCase().includes(query)) ||
+      ((adoptionUser?.fullName || '').toLowerCase().includes(query)) ||
+      ((shelter?.shelterName || '').toLowerCase().includes(query));
 
     const matchesStatus = statusFilter === 'all' || adoption.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
+
+  // Log filtered counts on each render when inputs change
+  useEffect(() => {
+    console.log('[AdoptionTab] State snapshot:', {
+      adoptionsCount: adoptions.length,
+      searchQuery,
+      statusFilter,
+      filteredCount: filteredAdoptions.length
+    });
+  }, [adoptions, searchQuery, statusFilter, filteredAdoptions.length]);
 
   const handleViewDetail = (adoption: AdoptionResponse) => {
     setSelectedAdoption(adoption);
