@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ChevronDown, ChevronUp, Package, Calendar, DollarSign, CreditCard, ShoppingBag } from 'lucide-react';
 import { OrderResponse, OrderDetailResponse } from '../../../types/Order';
 import { formatDate, formatPrice } from '../../../utils/FormatUtil';
+import { OrderFeedbackModal, getSavedOrderFeedback, OrderFeedback } from '../modal/OrderFeedbackModal';
 
 interface OrderAccordionProps {
   order: OrderResponse;
+  productNameById?: Record<string, string>;
 }
 
-export const OrderAccordion: React.FC<OrderAccordionProps> = ({ order }) => {
+export const OrderAccordion: React.FC<OrderAccordionProps> = ({ order, productNameById = {} }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isFeedbackOpen, setFeedbackOpen] = useState(false);
+  const [savedFeedback, setSavedFeedback] = useState<OrderFeedback | null>(() => getSavedOrderFeedback(order.orderId));
+
+  const canFeedback = useMemo(() => {
+    return order.status === 'COMPLETED';
+  }, [order.status]);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -106,6 +114,16 @@ export const OrderAccordion: React.FC<OrderAccordionProps> = ({ order }) => {
         <div className="mt-2 sm:hidden">
           {getPaymentStatusBadge(order.paymentStatus)}
         </div>
+
+        {/* Feedback summary (if exists) */}
+        {savedFeedback && (
+          <div className="mt-3 text-xs text-gray-600">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-orange-50 border border-orange-200 text-orange-700 mr-2">
+              ⭐ {savedFeedback.rating}/5
+            </span>
+            <span className="truncate align-middle">“{savedFeedback.comment || 'Đã gửi đánh giá'}”</span>
+          </div>
+        )}
       </div>
 
       {/* Expanded Content - Order Details */}
@@ -148,7 +166,7 @@ export const OrderAccordion: React.FC<OrderAccordionProps> = ({ order }) => {
                         <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900">
-                            Product ID: {detail.productId}
+                            Product: {productNameById[detail.productId] || detail.productId}
                           </p>
                           <p className="text-xs text-gray-600">
                             Quantity: {detail.quantity} × {formatPrice(detail.price)}
@@ -189,6 +207,14 @@ export const OrderAccordion: React.FC<OrderAccordionProps> = ({ order }) => {
                   Retry Payment
                 </button>
               )}
+              {canFeedback && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setFeedbackOpen(true); }}
+                  className="px-3 py-1 text-xs font-medium text-green-700 hover:text-green-800 bg-green-50 hover:bg-green-100 rounded transition-colors"
+                >
+                  Leave Feedback
+                </button>
+              )}
               <button className="px-3 py-1 text-xs font-medium text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors">
                 View Details
               </button>
@@ -196,6 +222,12 @@ export const OrderAccordion: React.FC<OrderAccordionProps> = ({ order }) => {
           </div>
         </div>
       )}
+      <OrderFeedbackModal
+        isOpen={isFeedbackOpen}
+        orderId={order.orderId}
+        onClose={() => setFeedbackOpen(false)}
+        onSaved={(fb) => setSavedFeedback(fb)}
+      />
     </div>
   );
 };

@@ -5,6 +5,8 @@ import { OrderAccordion } from '../../components/ui/accordion/OrderAccordion';
 import { useAuth } from '../../hooks/AuthorizationRoute';
 import { orderApi } from '../../services/api/OrderApi';
 import { formatPrice } from '../../utils/FormatUtil';
+import { productApi } from '../../services/api/ProductApi';
+import { ProductResponse } from '../../types/Product';
 
 export const OrderTab: React.FC = () => {
   const [orders, setOrders] = useState<OrderResponse[]>([]);
@@ -12,6 +14,7 @@ export const OrderTab: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'PENDING' | 'CONFIRMED' | 'SHIPPING' | 'COMPLETED' | 'CANCELLED'>('all');
   const [paymentFilter, setPaymentFilter] = useState<'all' | 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED'>('all');
   const [isLoading, setIsLoading] = useState(false);
+  const [productNameById, setProductNameById] = useState<Record<string, string>>({});
 
   const user = useAuth();
   const userId = user?.uuid;
@@ -37,6 +40,17 @@ export const OrderTab: React.FC = () => {
           orderDateTime: typeof o.orderDateTime === 'string' ? o.orderDateTime : (o.orderDateTime ?? '').toString()
         }));
         setOrders(normalized);
+
+        // Prefetch product names once
+        try {
+          const productsRes = await productApi.getAllProducts();
+          const plist: ProductResponse[] = productsRes.data.listData || [];
+          const map: Record<string, string> = {};
+          plist.forEach(p => { if (p.productId) map[p.productId] = p.productName; });
+          setProductNameById(map);
+        } catch (e) {
+          // ignore product prefetch errors
+        }
       } else {
         console.warn('No orders data found');
         setOrders([]);
@@ -194,6 +208,7 @@ export const OrderTab: React.FC = () => {
             <OrderAccordion
               key={order.orderId}
               order={order}
+              productNameById={productNameById}
             />
           ))}
         </div>
