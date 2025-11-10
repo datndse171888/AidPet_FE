@@ -30,7 +30,7 @@ export const useAuth = (): AuthorizedUser | null => {
     const role = userData.role as role;
     
     return {
-      uuid: userData.uuid || '',
+      uuid: (userData as any).uuid || (userData as any).userUuid || (userData as any).id || (userData as any).user_id || '',
       email: userData.email || '',
       role: role || 'USER',
       isAuthenticated: true
@@ -50,7 +50,7 @@ export const useData = (): UserInformation | null => {
     const userData: AccountResponse = JSON.parse(userDataString);
     
     return {
-      uuid: userData.uuid || '',
+      uuid: (userData as any).uuid || (userData as any).userUuid || (userData as any).id || (userData as any).user_id || '',
       email: userData.email || '',
       userName: userData.userName || '',
       fullName: userData.fullName || '',
