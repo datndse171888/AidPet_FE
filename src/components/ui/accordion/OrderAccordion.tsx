@@ -29,6 +29,7 @@ export const OrderAccordion: React.FC<OrderAccordionProps> = ({ order }) => {
   };
 
   const getPaymentStatusBadge = (paymentStatus: string) => {
+    const normalized = paymentStatus === 'SUCCESS' ? 'PAID' : paymentStatus;
     const statusConfig = {
       PENDING: { color: 'bg-yellow-100 text-yellow-800 border-yellow-300', label: 'Payment Pending' },
       PAID: { color: 'bg-green-100 text-green-800 border-green-300', label: 'Paid' },
@@ -36,7 +37,7 @@ export const OrderAccordion: React.FC<OrderAccordionProps> = ({ order }) => {
       CANCELLED: { color: 'bg-gray-100 text-gray-800 border-gray-300', label: 'Payment Cancelled' }
     };
 
-    const config = statusConfig[paymentStatus as keyof typeof statusConfig] || statusConfig.PENDING;
+    const config = statusConfig[normalized as keyof typeof statusConfig] || statusConfig.PENDING;
 
     return (
       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${config.color}`}>

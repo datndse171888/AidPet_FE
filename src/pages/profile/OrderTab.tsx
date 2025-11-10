@@ -31,7 +31,12 @@ export const OrderTab: React.FC = () => {
       const data = response.data;
       
       if (data && data.listData && Array.isArray(data.listData)) {
-        setOrders(data.listData);
+        const normalized = data.listData.map((o: any) => ({
+          ...o,
+          paymentStatus: o.paymentStatus === 'SUCCESS' ? 'PAID' : o.paymentStatus,
+          orderDateTime: typeof o.orderDateTime === 'string' ? o.orderDateTime : (o.orderDateTime ?? '').toString()
+        }));
+        setOrders(normalized);
       } else {
         console.warn('No orders data found');
         setOrders([]);
@@ -46,11 +51,12 @@ export const OrderTab: React.FC = () => {
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = 
-      order.orderId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.orderDateTime.toLowerCase().includes(searchQuery.toLowerCase());
+      (order.orderId || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (order.orderDateTime || '').toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    const matchesPayment = paymentFilter === 'all' || order.paymentStatus === paymentFilter;
+    const normalizedPayment = order.paymentStatus === 'SUCCESS' ? 'PAID' : order.paymentStatus;
+    const matchesPayment = paymentFilter === 'all' || normalizedPayment === paymentFilter;
 
     return matchesSearch && matchesStatus && matchesPayment;
   });
@@ -61,7 +67,7 @@ export const OrderTab: React.FC = () => {
     pending: orders.filter(o => o.status === 'PENDING').length,
     completed: orders.filter(o => o.status === 'COMPLETED').length,
     totalAmount: orders.reduce((sum, o) => sum + o.totalAmount, 0),
-    paidOrders: orders.filter(o => o.paymentStatus === 'PAID').length
+    paidOrders: orders.filter(o => (o.paymentStatus === 'PAID' || o.paymentStatus === 'SUCCESS')).length
   };
 
   const statusOptions = [

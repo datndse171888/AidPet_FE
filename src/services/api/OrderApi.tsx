@@ -8,7 +8,7 @@ export const orderApi = {
     },
 
     updateStatus: (orderId: string, data: OrderUpdateStatusRequest) => {
-        return api.put<OrderResponse>(`/update/status/${orderId}`, data);
+        return api.put<OrderResponse>(`/orders/update/status/${orderId}`, data);
     },
 
     getOrderByUser: (userId: string) => {
