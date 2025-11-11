@@ -14,4 +14,8 @@ export const orderApi = {
     getOrderByUser: (userId: string) => {
         return api.get<DataResponse<OrderResponse>>(`/orders/user/${userId}`);
     },
+
+    getAllOrders: (page: number = 0, size: number = 10) => {
+        return api.get<DataResponse<OrderResponse>>(`/orders?page=${page}&size=${size}`);
+    },
 }
