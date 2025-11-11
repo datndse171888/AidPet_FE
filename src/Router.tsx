@@ -24,6 +24,7 @@ import { AdminSetting } from './pages/admin/AdminSetting'
 import { AnimalManager } from './pages/admin/AnimalManager'
 import { Animal } from './pages/public/Animal'
 import { AccountManager } from './pages/admin/AccountManager'
+import { AdminOrders } from './pages/admin/AdminOrders'
 import { Product } from './pages/public/Product'
 import { Success } from './pages/payment/Success'
 import { Fail } from './pages/payment/Fail'
@@ -61,6 +62,7 @@ export const Router: React.FC = () => {
                             <Route path='posts' element={<PostManager />} />
                             <Route path='animals' element={<AnimalManager />} />
                             <Route path='accounts' element={<AccountManager />} />
+                            <Route path='orders' element={<AdminOrders />} />
                             <Route path='profile' element={<AdminProfile />} />
                             <Route path='settings' element={<AdminSetting />} />
                         </Route>
