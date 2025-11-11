@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { feedbackApi } from '../../../services/api/FeedbackApi';
+import { FeedbackRequest, FeedbackResponse } from '../../../types/Feedback';
 
 interface OrderFeedbackModalProps {
   isOpen: boolean;
@@ -32,29 +34,64 @@ export const OrderFeedbackModal: React.FC<OrderFeedbackModalProps> = ({ isOpen, 
 
   useEffect(() => {
     if (isOpen) {
-      const existing = getSavedOrderFeedback(orderId);
-      if (existing) {
-        setRating(existing.rating);
-        setComment(existing.comment);
-      } else {
-        setRating(5);
-        setComment('');
-      }
+      // Load existing feedback from API if available, fallback localStorage
+      (async () => {
+        try {
+          const res = await feedbackApi.getByOrder(orderId);
+          const fb = res.data;
+          if (fb && typeof fb.rating === 'number') {
+            setRating(fb.rating);
+            setComment(fb.comment || '');
+            return;
+          }
+        } catch {
+          // ignore and fallback to local
+        }
+        const existing = getSavedOrderFeedback(orderId);
+        if (existing) {
+          setRating(existing.rating);
+          setComment(existing.comment);
+        } else {
+          setRating(5);
+          setComment('');
+        }
+      })();
     }
   }, [isOpen, orderId]);
 
   if (!isOpen) return null;
 
-  const save = () => {
-    const payload: OrderFeedback = {
-      orderId,
-      rating,
-      comment: comment.trim(),
-      createdAt: new Date().toISOString()
-    };
-    localStorage.setItem(storageKey(orderId), JSON.stringify(payload));
-    onSaved?.(payload);
-    onClose();
+  const save = async () => {
+    const body: FeedbackRequest = { rating, comment: comment.trim() };
+    try {
+      // Try update first; if 404 then create
+      let res: { data: FeedbackResponse };
+      try {
+        res = await feedbackApi.update(orderId, body);
+      } catch {
+        res = await feedbackApi.create(orderId, body);
+      }
+      const saved: OrderFeedback = {
+        orderId,
+        rating: res.data.rating,
+        comment: res.data.comment,
+        createdAt: res.data.createdAt || new Date().toISOString()
+      };
+      localStorage.setItem(storageKey(orderId), JSON.stringify(saved));
+      onSaved?.(saved);
+      onClose();
+    } catch (e) {
+      // fallback local save to avoid user losing input
+      const payload: OrderFeedback = {
+        orderId,
+        rating,
+        comment: comment.trim(),
+        createdAt: new Date().toISOString()
+      };
+      localStorage.setItem(storageKey(orderId), JSON.stringify(payload));
+      onSaved?.(payload);
+      onClose();
+    }
   };
 
   return (
