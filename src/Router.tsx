@@ -38,11 +38,11 @@ export const Router: React.FC = () => {
                         {/* Public Routes */}
                         <Route path='/' element={<Layout />} >
                             <Route index element={<Homepage />} />
-                            <Route path='/news' element={<News />} />
-                            <Route path='/news/:id' element={<NewsDetail />} />
-                            <Route path='/product' element={<Product />} />
-                            <Route path='/animal' element={<Animal />} />
-                            <Route path='/profile' element={
+                            <Route path='news' element={<News />} />
+                            <Route path='news/:id' element={<NewsDetail />} />
+                            <Route path='product' element={<Product />} />
+                            <Route path='animal' element={<Animal />} />
+                            <Route path='profile' element={
                                 <AuthorizationRoute requireAuth={true}>
                                     <Profile />
                                 </AuthorizationRoute>} />
@@ -58,13 +58,13 @@ export const Router: React.FC = () => {
                         }>
 
                             <Route index element={<Dashboard />} />
-                            <Route path='/dashboard' element={<Dashboard />} />
-                            <Route path='/posts' element={<PostManager />} />
-                            <Route path='/animals' element={<AnimalManager />} />
-                            <Route path='/accounts' element={<AccountManager />} />
-                            <Route path='/orders' element={<AdminOrders />} />
-                            <Route path='/profile' element={<AdminProfile />} />
-                            <Route path='/settings' element={<AdminSetting />} />
+                            <Route path='dashboard' element={<Dashboard />} />
+                            <Route path='posts' element={<PostManager />} />
+                            <Route path='animals' element={<AnimalManager />} />
+                            <Route path='accounts' element={<AccountManager />} />
+                            <Route path='orders' element={<AdminOrders />} />
+                            <Route path='profile' element={<AdminProfile />} />
+                            <Route path='settings' element={<AdminSetting />} />
                         </Route>
 
                         {/* Auth Routes */}
