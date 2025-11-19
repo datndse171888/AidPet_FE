@@ -89,10 +89,10 @@ export const Product: React.FC = () => {
       const matchesColor = selectedColor === '' || product.color === selectedColor;
 
       const matchesPriceRange = selectedPriceRange === '' ||
-        (selectedPriceRange === '0-50' && product.price <= 50) ||
-        (selectedPriceRange === '51-100' && product.price > 50 && product.price <= 100) ||
-        (selectedPriceRange === '101-200' && product.price > 100 && product.price <= 200) ||
-        (selectedPriceRange === '201+' && product.price > 200);
+        (selectedPriceRange === '0-50.000' && product.price <= 50000) ||
+        (selectedPriceRange === '51.000-100.000' && product.price > 50000 && product.price <= 100000) ||
+        (selectedPriceRange === '101.000-200.000' && product.price > 100000 && product.price <= 200000) ||
+        (selectedPriceRange === '201.000+' && product.price > 200000);
 
       return matchesSearch && matchesColor && matchesPriceRange;
     });
@@ -100,10 +100,10 @@ export const Product: React.FC = () => {
 
   const colors = [...new Set(products.map(p => p.color).filter(Boolean))];
   const priceRanges = [
-    { value: '0-50', label: '$0 - $50' },
-    { value: '51-100', label: '$51 - $100' },
-    { value: '101-200', label: '$101 - $200' },
-    { value: '201+', label: '$201+' }
+    { value: '0-50.000', label: '0 VND - 50.000 VND' },
+    { value: '51.000-100.000', label: '51.000 VND - 100.000 VND' },
+    { value: '101.000-200.000', label: '101.000 VND - 200.000 VND' },
+    { value: '201.000+', label: '201.000 VND +' }
   ];
 
   //=========================
@@ -193,8 +193,6 @@ export const Product: React.FC = () => {
         const data: OrderResponse = response.data;
         console.log('Order submitted successfully:', data);
 
-        localStorage.setItem('orderId', data.orderId);
-        
         // mở payment URL ở 1 tab khác nếu `paymentUrl` tồn tại
         window.open(data.paymentUrl, '_blank');
       }
@@ -264,7 +262,7 @@ export const Product: React.FC = () => {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Total:</span>
-                    <span className="font-semibold">${totalPrice.toFixed(2)}</span>
+                    <span className="font-semibold">{totalPrice} VND</span>
                   </div>
                 </div>
                 <Button
@@ -394,9 +392,9 @@ export const Product: React.FC = () => {
                         />
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-900">{product.variant_name}</h3>
-                          <p className="text-sm text-gray-600">SKU: {product.sku}</p>
-                          <p className="text-sm text-gray-600">Color: {product.color}</p>
-                          <p className="text-sm text-orange-600">${product.price.toFixed(2)} each</p>
+                          <p className="text-sm text-gray-600">Mã sản phẩm: {product.sku}</p>
+                          <p className="text-sm text-gray-600">Màu: {product.color}</p>
+                          <p className="text-sm text-orange-600">{product.price} VND / cái</p>
                         </div>
                         <div className="flex items-center space-x-2">
                           <button
@@ -422,7 +420,7 @@ export const Product: React.FC = () => {
                         </div>
                         <div className="text-right">
                           <p className="font-semibold text-gray-900">
-                            ${(product.price * item.quantity).toFixed(2)}
+                            {(product.price * item.quantity)} VND
                           </p>
                           {product.stock_quantity < 10 && (
                             <p className="text-xs text-yellow-600">
@@ -437,7 +435,7 @@ export const Product: React.FC = () => {
                   {/* Cart Total */}
                   <div className="flex justify-between items-center pt-4 border-t border-gray-200">
                     <span className="text-lg font-semibold text-gray-900">Total:</span>
-                    <span className="text-lg font-bold text-orange-600">${totalPrice.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-orange-600">{totalPrice} VND</span>
                   </div>
                 </div>
               </div>

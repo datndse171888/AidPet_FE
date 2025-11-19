@@ -4,8 +4,12 @@ import { Button } from '../../components/ui/Button';
 import { navigationService } from '../../utils/NavigationService';
 import { OrderResponse, OrderUpdateStatusRequest } from '../../types/Order';
 import { orderApi } from '../../services/api/OrderApi';
+import { useSearchParams } from 'react-router-dom';
 
 export const Fail: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const orderId = searchParams.get('id');
+
   const [showContent, setShowContent] = useState(false);
   const [callApiRate, setCallApiRate] = useState(0);
   const formData: OrderUpdateStatusRequest = {
@@ -21,10 +25,9 @@ export const Fail: React.FC = () => {
 
   const updateStatus = async () => {
     try {
-      const orderId = localStorage.getItem('orderId') || '';
 
       if (!orderId) {
-        console.error('No orderId found in localStorage');
+        console.error('No order found');
         return;
       }
       // Call API to update order status
