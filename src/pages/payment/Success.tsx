@@ -13,6 +13,7 @@ export const Success: React.FC = () => {
   };
 
   useEffect(() => {
+    updateStatus();
     // Show content after component mounts for animation effect
     const timer = setTimeout(() => setShowContent(true), 100);
     return () => clearTimeout(timer);
