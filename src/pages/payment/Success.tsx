@@ -4,12 +4,8 @@ import { Button } from '../../components/ui/Button';
 import { navigationService } from '../../utils/NavigationService';
 import { OrderResponse, OrderUpdateStatusRequest } from '../../types/Order';
 import { orderApi } from '../../services/api/OrderApi';
-import { useSearchParams } from 'react-router-dom';
 
 export const Success: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const orderId = searchParams.get('id');
-
   const [showContent, setShowContent] = useState(false);
   const [callApiRate, setCallApiRate] = useState(0);
   const formData: OrderUpdateStatusRequest = {
@@ -25,6 +21,7 @@ export const Success: React.FC = () => {
 
   const updateStatus = async () => {
     try {
+      const orderId = localStorage.getItem('orderId') || '';
 
       if (!orderId) {
         console.error('No order found');
