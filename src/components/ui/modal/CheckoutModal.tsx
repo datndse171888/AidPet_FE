@@ -1,10 +1,9 @@
 import React, { useEffect } from 'react';
-import { X, User, Phone, Mail } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '../Button';
-import { Input } from '../input/Input';
 import { OrderRequest, OrderDetailItem } from '../../../types/Order';
 import { ProductResponse } from '../../../types/Product';
-import { useAuth, useData } from '../../../hooks/AuthorizationRoute';
+import { useAuth } from '../../../hooks/AuthorizationRoute';
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -32,7 +31,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
     // User info
     const user = useAuth();
-    const userInfo = useData();
 
     //====================
     // fetch data & effects
@@ -54,13 +52,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     // Calculate totals
     //====================
 
-    const subtotal = cartItems.reduce((sum, item) => {
+    const total = cartItems.reduce((sum, item) => {
         const product = getProductById(item.productId);
         return sum + (product ? product.price * item.quantity : 0);
     }, 0);
-
-    const tax = subtotal * 0.08; // 8% tax
-    const total = subtotal + tax;
 
     // Handle form submission
     const handleSubmit = (e: React.FormEvent) => {
@@ -108,7 +103,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                 {/* Left Column - Order Summary */}
                                 <div className="space-y-6">
                                     <div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
                                         <div className="bg-gray-50 rounded-lg p-4 space-y-4">
                                             {cartItems.map((item) => {
                                                 const product = getProductById(item.productId);
@@ -128,10 +122,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                                         </div>
                                                         <div className="text-right">
                                                             <p className="font-medium text-gray-900">
-                                                                ${(product.price * item.quantity).toFixed(2)}
+                                                                {(product.price * item.quantity)} VND
                                                             </p>
                                                             <p className="text-sm text-gray-600">
-                                                                ${product.price.toFixed(2)} each
+                                                                {product.price} VND / unit
                                                             </p>
                                                         </div>
                                                     </div>
@@ -140,50 +134,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
                                             {/* Totals */}
                                             <div className="border-t border-gray-200 pt-4 space-y-2">
-                                                <div className="flex justify-between text-sm">
-                                                    <span>Subtotal:</span>
-                                                    <span>${subtotal.toFixed(2)}</span>
-                                                </div>
-                                                <div className="flex justify-between text-sm">
-                                                    <span>Tax:</span>
-                                                    <span>${tax.toFixed(2)}</span>
-                                                </div>
                                                 <div className="flex justify-between font-bold text-lg border-t border-gray-300 pt-2">
                                                     <span>Total:</span>
-                                                    <span>${total.toFixed(2)}</span>
+                                                    <span>{total} VND</span>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Right Column - Customer & Shipping Info */}
-                                <div className="space-y-6">
-                                    {/* Customer Information */}
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Customer Information</h3>
-                                        <div className="space-y-4">
-                                            <Input
-                                                label="Full Name"
-                                                value={userInfo?.fullName}
-                                                icon={<User/>}
-                                                disabled
-                                            />
-
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                <Input
-                                                    label="Email"
-                                                    type="email"
-                                                    value={userInfo?.email}
-                                                    icon={<Mail />}
-                                                    disabled
-                                                />
-                                                <Input
-                                                    label="Phone"
-                                                    value={userInfo?.phone}
-                                                    icon={<Phone />}
-                                                    disabled
-                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -195,9 +149,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     {/* Footer */}
                     <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4">
                         <div className="flex items-center justify-between">
-                            <div className="text-lg font-bold text-gray-900">
-                                Total: ${total.toFixed(2)}
-                            </div>
                             <div className="flex space-x-4">
                                 <Button
                                     type="button"

@@ -396,7 +396,7 @@ export const Product: React.FC = () => {
                           <h3 className="font-semibold text-gray-900">{product.variant_name}</h3>
                           <p className="text-sm text-gray-600">Mã sản phẩm: {product.sku}</p>
                           <p className="text-sm text-gray-600">Màu: {product.color}</p>
-                          <p className="text-sm text-orange-600">{product.price} VND / cái</p>
+                          <p className="text-sm text-orange-600">{product.price} VND / unit</p>
                         </div>
                         <div className="flex items-center space-x-2">
                           <button
